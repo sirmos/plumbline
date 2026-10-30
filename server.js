@@ -1,7 +1,7 @@
 "use strict";
 // Plumb Line server. No dependencies. Node 18+.
 const http = require("http"), fs = require("fs"), path = require("path"), dns = require("dns").promises, net = require("net"), crypto = require("crypto");
-const store = require("./lib/store"), ai = require("./lib/ai"), { newChurch } = require("./lib/seed");
+const store = require("./lib/store"), ai = require("./lib/ai"), pulpit = require("./lib/pulpit"), { newChurch } = require("./lib/seed");
 
 const PORT = process.env.PORT || 3000;
 const PUB = path.join(__dirname, "public");
@@ -27,6 +27,14 @@ function readBody(req) {
     let over = false;
     req.on("data", d => { if (over) return; n += d.length; if (n > 200000) { over = true; parts.length = 0; no(Object.assign(new Error("Request is too large."), { code: 413 })); req.resume(); } else parts.push(d); });
     req.on("end", () => { if (over) return; try { ok(parts.length ? JSON.parse(Buffer.concat(parts).toString()) : {}); } catch (e) { no(Object.assign(new Error("bad json"), { code: 400 })); } });
+    req.on("error", no);
+  });
+}
+function readRaw(req, max) {
+  return new Promise((ok, no) => {
+    let n = 0, over = false; const parts = [];
+    req.on("data", d => { if (over) return; n += d.length; if (n > max) { over = true; parts.length = 0; no(Object.assign(new Error("Audio chunk is too large."), { code: 413 })); req.resume(); } else parts.push(d); });
+    req.on("end", () => { if (!over) ok(Buffer.concat(parts)); });
     req.on("error", no);
   });
 }
@@ -85,8 +93,9 @@ async function publicApi(req, res, parts) {
   if (!c) return send(res, 404, { error: "Unknown church" });
   const cors = corsFor(c, req);
   const base = { "access-control-allow-methods": "GET,POST,OPTIONS", "access-control-allow-headers": "content-type", "access-control-max-age": "600" };
-  if (!cors) return send(res, 403, { error: "This site is not allowed to use this church's widget." });
-  const H = { ...base, ...cors };
+  const liveView = parts[3] === "live" && req.method === "GET" && !req.headers.origin; // the viewer page is served from this server, so it sends no Origin
+  if (!cors && !liveView) return send(res, 403, { error: "This site is not allowed to use this church's widget." });
+  const H = { ...base, ...(cors || {}) };
   if (req.method === "OPTIONS") { res.writeHead(204, H); return res.end(); }
   const what = parts[3];
 
@@ -98,9 +107,19 @@ async function publicApi(req, res, parts) {
       partnerCities: c.partners.map(p => p.city),
       features: { guide: c.features.guide, week: c.features.week, visit: c.features.visit, prayer: c.features.prayer, care: c.features.care,
         groups: c.features.groups && c.groups.some(g => g.open), moving: c.features.moving && c.partners.length > 0 },
+      live: (() => { const l = c.features.live && pulpit.activeFor(c.id); return l ? { sid: l.id, title: l.title } : null; })(),
       languages: LANGS, interests: INTERESTS,
       disclosure: c.rules.disclose ? "Answers are written by AI from information " + c.name + " has confirmed. A person reviews anything sent to you." : ""
     }, H);
+  }
+  if (what === "live" && req.method === "GET") {
+    if (!c.features.live) return send(res, 404, { error: "Live captions are switched off for this church." }, H);
+    if (limited("live:" + ip(req), 150, 60000)) return send(res, 429, { error: "Too many requests." }, H);
+    if (!parts[4]) { const l = pulpit.activeFor(c.id); return send(res, 200, { church: c.name, color: c.color, active: !!l, sid: l ? l.id : null, title: l ? l.title : "", source: l ? l.lang : "", languages: LANGS, aiLive: ai.live() }, H); }
+    const l = pulpit.get(parts[4]);
+    if (!l || l.churchId !== c.id) return send(res, 404, { error: "That service was not found." }, H);
+    const q = new URL(req.url, "http://x").searchParams;
+    return send(res, 200, pulpit.poll(l, Math.max(0, Number(q.get("since")) || 0), q.get("lang") || ""), H);
   }
   if (req.method !== "POST") return send(res, 404, { error: "Not found" }, H);
   let b;
@@ -279,7 +298,11 @@ async function publicApi(req, res, parts) {
 }
 
 /* ---------- admin API (pastor) ---------- */
-function clean(c) { const { salt, passHash, ...rest } = c; return rest; }
+function clean(c) {
+  const { salt, passHash, ...rest } = c;
+  rest.pulpit = { services: ((c.pulpit && c.pulpit.services) || []).map(({ lines, ...m }) => ({ ...m, count: lines.length })) }; // transcripts are fetched on demand
+  return rest;
+}
 function auth(req) {
   const h = String(req.headers.authorization || "");
   const d = h.startsWith("Bearer ") ? store.verify(h.slice(7)) : null;
@@ -331,6 +354,33 @@ async function adminApi(req, res, parts) {
   if (!c) return send(res, 401, { error: "Please sign in again." });
 
   if (what === "state" && req.method === "GET") return send(res, 200, { church: clean(c), aiLive: ai.live(), aiStatus: ai.status() });
+
+  if (what === "pulpit") {
+    const sub = parts[3] || "", mine = (id) => { const l = pulpit.get(String(id || "")); return l && l.churchId === c.id && !l.ended ? l : null; };
+    const info = (l) => l && { sid: l.id, title: l.title, lang: l.lang, at: l.at, lines: l.lines.length, viewers: pulpit.viewerCounts(l), stats: l.stats,
+      recent: l.lines.slice(-8).map(x => ({ n: x.n, o: x.o, langs: Object.keys(x.tr), how: x.how })) };
+    if (sub === "" && req.method === "GET") return send(res, 200, { active: info(pulpit.activeFor(c.id)), stt: ai.sttStatus(), sttLive: ai.sttLive(), aiLive: ai.live(), languages: LANGS, enabled: c.features.live });
+    if (sub === "start" && req.method === "POST") {
+      if (limited("pstart:" + c.id, 20, 3600000)) return send(res, 429, { error: "Too many services started this hour." });
+      const l = pulpit.start(c, { title: b.title, lang: b.lang }); store.put(c);
+      return send(res, 200, { sid: l.id, active: info(l) });
+    }
+    if (sub === "line" && req.method === "POST") {
+      const l = mine(b.sid); if (!l) return send(res, 404, { error: "No live service is running." });
+      if (limited("pline:" + c.id, 90, 60000)) return send(res, 429, { error: "Slow down a little." });
+      const x = pulpit.addLine(l, str(b.text, 1200), "typed"); if (!x) return send(res, 400, { error: "Type some text first." });
+      return send(res, 200, { ok: true, n: x.n });
+    }
+    if (sub === "end" && req.method === "POST") {
+      const l = mine(b.sid); if (!l) return send(res, 404, { error: "No live service is running." });
+      pulpit.end(c, l.id); store.put(c); return send(res, 200, { ok: true, lines: l.lines.length });
+    }
+    if (sub === "transcript" && req.method === "GET") {
+      const id = new URL(req.url, "http://x").searchParams.get("id"), sv = ((c.pulpit && c.pulpit.services) || []).find(x => x.id === id);
+      return sv ? send(res, 200, { title: sv.title, at: sv.at, text: sv.lines.join("\n") }) : send(res, 404, { error: "Service not found." });
+    }
+    return send(res, 404, { error: "Not found" });
+  }
 
   if (what === "settings" && req.method === "PUT") { sanitizeSettings(c, b); store.put(c); return send(res, 200, { church: clean(c) }); }
 
@@ -414,6 +464,7 @@ async function adminApi(req, res, parts) {
 function serveStatic(req, res, p) {
   if (p === "/" || p === "/admin") p = "/admin.html";
   if (p === "/demo") p = "/demo.html";
+  if (p === "/live") p = "/live.html";
   const f = path.normalize(path.join(PUB, p));
   if (!f.startsWith(PUB + path.sep)) { res.writeHead(403); return res.end(); }
   fs.readFile(f, (err, buf) => {
@@ -424,9 +475,28 @@ function serveStatic(req, res, p) {
     res.writeHead(200, h); res.end(buf);
   });
 }
+pulpit.setAutoEnd(s => { const c = store.get(s.churchId); pulpit.end(c, s.id); if (c) store.put(c); });
+// One audio chunk (a few seconds) from the pastor's browser. Binary body, so it does not go through the JSON reader.
+async function pulpitAudio(req, res, url) {
+  const c = auth(req); if (!c) return send(res, 401, { error: "Please sign in again." });
+  const l = pulpit.get(url.searchParams.get("sid") || "");
+  if (!l || l.churchId !== c.id || l.ended) { req.resume(); return send(res, 404, { error: "No live service is running." }); }
+  if (limited("paud:" + c.id, 40, 60000)) { req.resume(); return send(res, 429, { error: "Too many audio chunks." }); }
+  let buf; try { buf = await readRaw(req, 1500000); } catch (e) { return send(res, e.code || 400, { error: e.message }); }
+  if (!ai.sttLive()) return send(res, 503, { error: "No speech provider is set up on this server. Add GROQ_API_KEY, or type captions instead.", code: "no_stt" });
+  l.touched = Date.now(); l.stats.chunks++;
+  if (buf.length < 1500) { l.stats.silent++; return send(res, 200, { ok: true, text: "" }); }
+  const prompt = l.lines.slice(-2).map(x => x.o).join(" ").slice(-160);
+  const r = await ai.transcribe(buf, { mime: req.headers["content-type"], language: pulpit.ISO[l.lang], prompt });
+  if (!r.ok) { l.stats.failed++; return send(res, 200, { ok: false, why: r.why, tried: r.tried }); }
+  if (!r.text) { l.stats.silent++; return send(res, 200, { ok: true, text: "" }); }
+  const x = pulpit.addLine(l, r.text, "voice");
+  return send(res, 200, { ok: true, text: r.text, n: x ? x.n : 0, via: r.via });
+}
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, "http://x"), parts = url.pathname.split("/").filter(Boolean);
+    if (req.method === "POST" && parts[0] === "api" && parts[1] === "admin" && parts[2] === "pulpit" && parts[3] === "audio") return await pulpitAudio(req, res, url);
     if (parts[0] === "api" && parts[1] === "public" && parts[2]) return await publicApi(req, res, parts);
     if (parts[0] === "api" && parts[1] === "admin") return await adminApi(req, res, parts);
     if (parts[0] === "api") return send(res, 404, { error: "Not found" });
