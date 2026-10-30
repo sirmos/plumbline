@@ -7,7 +7,7 @@ No dependencies. Node 18 or newer.
 ## Run it
 
     npm start          # http://localhost:3000
-    npm test           # 78 end-to-end checks
+    npm test           # 145 checks: app (78), AI failover (29), Live Pulpit (38)
     npm run test:ai    # 29 checks of the AI failover router
 
 Open `http://localhost:3000`, create your church, and the dashboard shows your embed code. Without any AI key everything still works using simple rule-based drafts. Add a free key to turn AI on:
@@ -65,7 +65,26 @@ The widget runs in a sealed Shadow DOM, so it cannot clash with the site's style
 - **Help**: meals, rides, visits. Goes to a care board for a person to act on.
 - **Moving?**: a consent-based letter of commendation to a partner church.
 
+**Live Pulpit (new in v0.4)**: the pastor starts a service, shows a QR code, and speaks. Anyone who scans it reads live captions in one of 12 languages. See "Live Pulpit" below.
+
 **Dashboard (pastor)**: overview with a 14-day activity chart and a "needs you" list; review queue; visitor board; care board with suggested steps; sermon-to-week with paragraph-level sourcing and drift flags; unanswered-question gaps that turn into guide answers; doctrine and rules; generated AI use policy; AI log with CSV export; install help.
+
+## Live Pulpit
+
+Open **Live Pulpit** in the dashboard, press **Start service**, then **Start microphone**. The room scans the QR code (or opens `/live?church=ID`) and picks a language.
+
+    microphone -> 7 second audio chunks -> speech-to-text (Groq Whisper) -> caption line
+                                                                         -> one AI call translates it into the languages
+                                                                            people currently have open (never the source language)
+
+- **Only open languages are translated.** A viewer's language counts as active for 20 seconds after their last poll, so cost follows the room, not the list of 12. One call covers all active languages.
+- **Silence costs nothing.** The browser skips quiet chunks, the server skips tiny ones, and stock phrases Whisper invents from noise ("Thank you.") are dropped.
+- **It degrades instead of stopping.** If translation fails, viewers still see the original line. If the speech provider fails it cools down and the pastor can type captions. Late joiners get the last six lines translated when they pick a language.
+- **Larger model for harder languages.** When Yoruba, Igbo, Hausa, Nigerian Pidgin or Swahili is open, the larger model is used. Speech recognition itself is weaker for Yoruba, Hausa and Igbo, and Whisper has no Igbo or Pidgin model, so speak English, Spanish, French or similar and let viewers read the others.
+- **Privacy.** Audio is never stored. Only the source transcript is saved when the pastor ends the service, and only for the church that owns it. Translations are not saved. Viewers see "Captions are made by AI and can contain mistakes."
+- **Not a replacement for an interpreter** where accuracy is critical.
+
+Speech settings: `GROQ_API_KEY` is enough (`GROQ_STT_MODEL` overrides the model). To use another Whisper-compatible server, set `STT_BASE`, `STT_MODEL` and optionally `STT_API_KEY`. Groq's free speech limits are per account, so one key covers a few churches at once; check its current limits.
 
 ## How it stays safe
 
@@ -90,11 +109,16 @@ Any host that runs Node or Docker works. `Dockerfile` and `render.yaml` are incl
 ## Layout
 
     server.js          routes: public widget API, pastor API, static files
-    lib/ai.js          AI provider chain with failover, rules, fixed guardrails, offline fallbacks
+    lib/ai.js          AI provider chain with failover, speech-to-text, rules, guardrails, offline fallbacks
+    lib/pulpit.js      Live Pulpit sessions, viewer languages, translation
     lib/store.js       storage, passcode hashing, signed tokens
     lib/seed.js        a new church's starting content
     public/widget.js   the embeddable widget
     public/admin.html  the pastor dashboard
+    public/live.html   the page a phone opens from the QR code
+    public/qr.js       small QR code generator, written for this project (no dependency)
     public/demo.html   a sample church website
     test/e2e.js        end-to-end tests
+    test/router.js     AI failover tests against fake providers
+    test/pulpit.js     Live Pulpit tests against a fake Whisper and chat provider
     test/router.js     failover tests against fake providers
