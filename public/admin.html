@@ -178,7 +178,7 @@ function authView(){
 }
 
 /* ---------- app shell ---------- */
-const NAV=[["Daily",[["overview","Overview"],["pulpit","Live Pulpit"],["queue","Review queue"],["sermon","Sermon to week"]]],
+const NAV=[["Daily",[["overview","Overview"],["brief","Monday Brief"],["pulpit","Live Pulpit"],["queue","Review queue"],["sermon","Sermon to week"]]],
  ["People",[["visitors","Visitors"],["care","Care board"],["insight","What people carry"]]],
  ["Set up",[["start","Get started"],["church","Church & features"],["doctrine","Doctrine & rules"],["faq","Guide answers"],["groups","Small groups"],["partners","Partner churches"]]],
  ["Publish",[["install","Install on your website"],["policy","AI use policy"],["log","AI log"],["engine","AI engine"]]]];
@@ -219,6 +219,7 @@ function checklist(){
   const done=items.filter(i=>i[1]).length;
   return `<section class="panel"><div class="row" style="justify-content:space-between"><h3>Your setup</h3><span class="mono muted">${done} of ${items.length}</span></div><div class="progress"><i style="width:${done/items.length*100}%"></i></div><div class="check-list">${items.map(i=>`<div class="step"><span class="dot ${i[1]?"done":""}">${i[1]?"✓":""}</span><span>${esc(i[0])}</span><button class="btn ghost sm" data-go="${i[2]}">${i[3]}</button></div>`).join("")}</div></section>`;}
 const VIEWS={
+ brief:()=>intro("Monday Brief","One page for the start of your week. Every number is counted by code from your own records. The AI only writes the wording around them, and any answer that contains a figure it was not given is thrown away.")+`<div id="br-root"><p class="muted">Loading…</p></div>`,
  pulpit:()=>intro("Live Pulpit","Show a QR code in the room. Anyone who scans it reads your service as live captions in their own language. Only the languages people currently have open are translated.")+`<div id="pl-root"><p class="muted">Loading…</p></div>`,
  start:()=>intro("Welcome, "+esc(ST.pastor==="Pastor"?"pastor":ST.pastor),"Plumb Line gives your church a helper that answers visitors, shares your weekly reading plan, receives prayer requests and writes letters of commendation. It drafts. You decide.")+checklist(),
 
@@ -432,8 +433,38 @@ async function plSend(){
   PUL.busy=false;
 }
 
+
+/* ---------- Monday Brief ---------- */
+const BR={data:null,busy:false};
+async function brLoad(){try{BR.data=await api("brief");}catch(e){toast(e.message);}brDraw();}
+function brDelta(x){return x.change===0?`<span class="muted">same as before</span>`:x.change>0?`<span style="color:var(--green)">▲ ${x.change} more</span>`:`<span style="color:var(--amber)">▼ ${-x.change} fewer</span>`;}
+function brDraw(){
+  const root=$("#br-root");if(!root||VIEW!=="brief")return;const D=BR.data;if(!D){root.innerHTML='<p class="muted">Loading…</p>';return;}
+  const f=D.facts,w=f.week,L=D.latest,R=D.records;
+  const tile=(n,t,sub)=>`<div class="stat"><b>${n}</b><span>${t}</span>${sub?`<div style="font-size:12.5px">${sub}</div>`:""}</div>`;
+  const rows=(arr,fn,empty)=>arr.length?arr.map(fn).join(""):`<p class="muted" style="font-size:13.5px">${empty}</p>`;
+  root.innerHTML=
+  (L?`<section class="card"><header><div class="meta"><span class="label">Week ending ${esc(L.weekEnding)} · written ${ago(L.at)}</span><h3>${esc(L.headline)}</h3></div><span class="pill ${L.live?"ok":"wait"}" title="Which AI wrote this wording">${L.live?esc(L.via):"Rule-based"}</span></header>
+    <div class="body"><p>${esc(L.summary)}</p>
+      <div><span class="label">Three things to do</span>${L.actions.map((a,i)=>`<div class="need"><span><b>${i+1}. ${esc(a.title)}</b><br><span class="muted">${esc(a.why)}</span></span><button class="btn ghost sm" data-brgo="${esc(a.view)}">Open</button></div>`).join("")}</div></div>
+    <footer><button class="btn" id="br-new" ${BR.busy?"disabled":""}>${BR.busy?"Writing…":"Write a new brief"}</button><button class="btn ghost" id="br-copy">Copy as email</button><button class="btn ghost" id="br-dl">Download .txt</button></footer></section>`
+  :`<div class="empty"><b>No brief yet</b><span>The counts below are live. Press the button to have the wording written.</span><button class="btn" id="br-new" ${BR.busy?"disabled":""}>${BR.busy?"Writing…":"Write this week's brief"}</button></div>`)+
+  `<section class="panel"><div class="row" style="justify-content:space-between"><h3>Counted this week</h3><span class="pill">Counted by code, not AI</span></div>
+    <div class="stats">${tile(w.questions.n,"questions asked",brDelta(w.questions))}${tile(w.firstVisits.n,"first-time visitors",brDelta(w.firstVisits))}${tile(w.prayers.n,"prayer requests",brDelta(w.prayers))}${tile(w.careRequests.n,"care requests",brDelta(w.careRequests))}${tile(w.groupSearches.n,"group searches",brDelta(w.groupSearches))}${tile(f.liveServices.count,"services captioned",f.liveServices.captionLines+" caption lines")}</div></section>
+  <section class="panel"><h3>Waiting on a person</h3>
+    <div class="stats">${tile(f.drafts.waitingForApproval,"drafts to approve",f.drafts.urgentAlerts?`<b style="color:var(--red)">${f.drafts.urgentAlerts} urgent</b>`:"oldest "+f.drafts.oldestWaitingDays+" d")}${tile(f.care.open,"open care requests",f.care.waitingOverThreshold+" waited "+f.thresholds.staleCareDays+"+ days · "+f.care.unassigned+" unassigned")}${tile(f.visitors.newToWelcome,"visitors to welcome",f.visitors.waitingOverThreshold+" waited "+f.thresholds.staleVisitorDays+"+ days")}</div></section>
+  <section class="panel"><h3>Behind the numbers</h3><details open><summary>Questions people asked that your guide could not answer</summary>${rows(R.unanswered,x=>`<div class="need"><span>${esc(x.question)}</span><span class="mono">${x.n}×</span></div>`,"None this week.")}${R.unanswered.length?`<div class="row"><button class="btn ghost sm" data-brgo="faq">Add answers</button></div>`:""}</details>
+    <details><summary>Visitors still waiting for a welcome (${R.staleVisitors.length})</summary>${rows(R.staleVisitors,x=>`<div class="need"><span>${esc(x.name)}</span><span class="mono">${x.days} days</span></div>`,"Nobody is waiting longer than "+f.thresholds.staleVisitorDays+" days.")}${R.staleVisitors.length?`<div class="row"><button class="btn ghost sm" data-brgo="visitors">Open visitors</button></div>`:""}</details>
+    <details><summary>Care requests that have waited (${R.staleCare.length})</summary>${rows(R.staleCare,x=>`<div class="need"><span>${esc(x.kind)} · ${x.assignee?esc(x.assignee):"unassigned"}</span><span class="mono">${x.days} days</span></div>`,"No open request has waited "+f.thresholds.staleCareDays+" days.")}${R.staleCare.length?`<div class="row"><button class="btn ghost sm" data-brgo="care">Open care board</button></div>`:""}</details>
+    <details><summary>Drafts waiting for you (${R.pending.length})</summary>${rows(R.pending,x=>`<div class="need ${x.urgent?"hot":""}"><span><b>${esc(x.title)}</b></span><span class="mono">${x.days} d</span></div>`,"Nothing is waiting.")}${R.pending.length?`<div class="row"><button class="btn ghost sm" data-brgo="queue">Open review queue</button></div>`:""}</details></section>`;
+  root.querySelectorAll("[data-brgo]").forEach(b=>b.onclick=()=>{VIEW=b.dataset.brgo;go();window.scrollTo(0,0);});
+  const nb=$("#br-new");if(nb)nb.onclick=async()=>{BR.busy=true;brDraw();try{BR.data=await api("brief","POST");await refresh();toast("Brief written.");}catch(e){toast(e.message);}BR.busy=false;brDraw();};
+  const cp=$("#br-copy");if(cp)cp.onclick=()=>copy(D.email);
+  const dl=$("#br-dl");if(dl)dl.onclick=()=>download("monday-brief-"+L.weekEnding+".txt",D.email,"text/plain");
+}
 function bind(){
   const main=$(".content");
+  if(VIEW==="brief")brLoad();
   if(VIEW==="pulpit")initPulpit();else clearInterval(PUL.poll);
   main.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{VIEW=b.dataset.go;go();window.scrollTo(0,0);});
   main.querySelectorAll("[data-act]").forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api("queue/"+b.dataset.id+"/"+b.dataset.act,"POST");await refresh();toast(b.dataset.act==="approve"?"Approved and logged.":"Rejected and logged.");go();}catch(e){toast(e.message);b.disabled=false;}});

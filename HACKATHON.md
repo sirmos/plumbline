@@ -21,6 +21,6 @@ Each item is a later commit.
 | **Live Pulpit**: live captions of a service in 12 languages, joined by QR code | `lib/pulpit.js`, `public/live.html`, `public/qr.js`, Live Pulpit view in `public/admin.html`, routes in `server.js` | `test/pulpit.js` (38 checks) |
 | Speech-to-text with failover and silence/phantom filtering | `transcribe` in `lib/ai.js` | `test/pulpit.js` |
 | "Live now" banner in the website widget | `public/widget.js` | browser check |
-| Monday Brief | _not started yet_ | |
+| **Monday Brief**: weekly page of counted numbers, the records behind them, and three suggested actions; AI wording is rejected if it contains a figure that was not counted | `lib/brief.js`, Monday Brief view in `public/admin.html`, `/api/admin/brief` in `server.js` | `test/brief.js` (33 checks) |
 
 Everything not in the second table is baseline. If a feature is not listed here, it was not built in the window.

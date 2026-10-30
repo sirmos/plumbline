@@ -1,7 +1,7 @@
 "use strict";
 // Plumb Line server. No dependencies. Node 18+.
 const http = require("http"), fs = require("fs"), path = require("path"), dns = require("dns").promises, net = require("net"), crypto = require("crypto");
-const store = require("./lib/store"), ai = require("./lib/ai"), pulpit = require("./lib/pulpit"), { newChurch } = require("./lib/seed");
+const store = require("./lib/store"), ai = require("./lib/ai"), pulpit = require("./lib/pulpit"), brief = require("./lib/brief"), { newChurch } = require("./lib/seed");
 
 const PORT = process.env.PORT || 3000;
 const PUB = path.join(__dirname, "public");
@@ -354,6 +354,17 @@ async function adminApi(req, res, parts) {
   if (!c) return send(res, 401, { error: "Please sign in again." });
 
   if (what === "state" && req.method === "GET") return send(res, 200, { church: clean(c), aiLive: ai.live(), aiStatus: ai.status() });
+
+  if (what === "brief") {
+    if (req.method === "GET") { const { weekEnding, facts, records } = brief.compute(c); const latest = (c.briefs || [])[0] || null; return send(res, 200, { weekEnding, facts, records, latest, email: latest ? brief.email(c, latest) : "" }); }
+    if (req.method === "POST") {
+      if (limited("brief:" + c.id, 10, 3600000)) return send(res, 429, { error: "Hourly limit reached for briefs." });
+      const { brief: bf, records } = await brief.generate(c);
+      logit(c, "Monday Brief", "Weekly brief written from counted data", bf.live ? bf.via : "rule-based fallback", null);
+      store.put(c);
+      return send(res, 200, { weekEnding: bf.weekEnding, facts: bf.facts, records, latest: bf, email: brief.email(c, bf) });
+    }
+  }
 
   if (what === "pulpit") {
     const sub = parts[3] || "", mine = (id) => { const l = pulpit.get(String(id || "")); return l && l.churchId === c.id && !l.ended ? l : null; };

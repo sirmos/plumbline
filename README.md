@@ -7,7 +7,7 @@ No dependencies. Node 18 or newer.
 ## Run it
 
     npm start          # http://localhost:3000
-    npm test           # 145 checks: app (78), AI failover (29), Live Pulpit (38)
+    npm test           # 178 checks: app (78), AI failover (29), Live Pulpit (38), Monday Brief (33)
     npm run test:ai    # 29 checks of the AI failover router
 
 Open `http://localhost:3000`, create your church, and the dashboard shows your embed code. Without any AI key everything still works using simple rule-based drafts. Add a free key to turn AI on:
@@ -67,6 +67,8 @@ The widget runs in a sealed Shadow DOM, so it cannot clash with the site's style
 
 **Live Pulpit (new in v0.4)**: the pastor starts a service, shows a QR code, and speaks. Anyone who scans it reads live captions in one of 12 languages. See "Live Pulpit" below.
 
+**Monday Brief (new in v0.5)**: one page for the start of the pastor's week. Questions, visitors, prayer and care counts against the week before, then what is waiting on a person, then three suggested actions. See "Monday Brief" below.
+
 **Dashboard (pastor)**: overview with a 14-day activity chart and a "needs you" list; review queue; visitor board; care board with suggested steps; sermon-to-week with paragraph-level sourcing and drift flags; unanswered-question gaps that turn into guide answers; doctrine and rules; generated AI use policy; AI log with CSV export; install help.
 
 ## Live Pulpit
@@ -85,6 +87,14 @@ Open **Live Pulpit** in the dashboard, press **Start service**, then **Start mic
 - **Not a replacement for an interpreter** where accuracy is critical.
 
 Speech settings: `GROQ_API_KEY` is enough (`GROQ_STT_MODEL` overrides the model). To use another Whisper-compatible server, set `STT_BASE`, `STT_MODEL` and optionally `STT_API_KEY`. Groq's free speech limits are per account, so one key covers a few churches at once; check its current limits.
+
+## Monday Brief
+
+Open **Monday Brief** in the dashboard. The counts are always live. Press **Write this week's brief** to have the wording written, then **Copy as email** or **Download**. Nothing is sent for you.
+
+- **Code counts, the AI words.** Every figure comes from your own records in `lib/brief.js`. The AI is given only labels and numbers, and its answer is thrown away if it contains any figure it was not given, or points to a page that does not exist. Then the next provider is tried, and finally a plain rule-based brief is written.
+- **No personal details reach the AI.** It sees counts and scrubbed question text, never names, contact details or prayer text. Names appear only on your own screen, under "Behind the numbers", so you can check each number against the records.
+- **Every brief is logged** in the AI log with the provider that wrote it.
 
 ## How it stays safe
 
@@ -111,6 +121,7 @@ Any host that runs Node or Docker works. `Dockerfile` and `render.yaml` are incl
     server.js          routes: public widget API, pastor API, static files
     lib/ai.js          AI provider chain with failover, speech-to-text, rules, guardrails, offline fallbacks
     lib/pulpit.js      Live Pulpit sessions, viewer languages, translation
+    lib/brief.js       Monday Brief: counts, figure check, rule-based fallback
     lib/store.js       storage, passcode hashing, signed tokens
     lib/seed.js        a new church's starting content
     public/widget.js   the embeddable widget
@@ -121,4 +132,5 @@ Any host that runs Node or Docker works. `Dockerfile` and `render.yaml` are incl
     test/e2e.js        end-to-end tests
     test/router.js     AI failover tests against fake providers
     test/pulpit.js     Live Pulpit tests against a fake Whisper and chat provider
+    test/brief.js      Monday Brief tests: exact counts, invented figures refused
     test/router.js     failover tests against fake providers
