@@ -85,7 +85,7 @@
     tabsEl = h("div", { class: "tabs", role: "tablist" });
     bodyEl = h("div", { class: "body", "aria-live": "polite" }); footEl = h("div", { class: "foot" });
     panel.appendChild(h("div", { class: "head" }, [titleEl, close])); panel.appendChild(tabsEl); panel.appendChild(bodyEl); panel.appendChild(footEl);
-    launch = h("button", { class: "launch", "aria-expanded": "false", onclick: toggle }, ["💬 ", "Questions?"]);
+    launch = h("button", { class: "launch", "aria-expanded": "false", onclick: toggle }, ["💬 ", cfg.live ? "Live captions" : "Questions?"]);
     root.appendChild(panel); root.appendChild(launch); sr.appendChild(root);
     document.body.appendChild(host);
     root.addEventListener("keydown", function (e) { if (e.key === "Escape" && S.open) { toggle(); launch.focus(); } });
@@ -108,6 +108,7 @@
     tabs().forEach(function (t) { tabsEl.appendChild(h("button", { role: "tab", "aria-selected": String(S.tab === t[0]), onclick: function () { S.tab = t[0]; draw(); } }, t[1])); });
     bodyEl.textContent = ""; footEl.textContent = ""; footEl.hidden = true;
     var avail = tabs().map(function (t) { return t[0]; }); if (avail.indexOf(S.tab) < 0) S.tab = avail[0];
+    if (cfg.live) bodyEl.appendChild(h("a", { class: "box", href: BASE + "/live?church=" + encodeURIComponent(CHURCH), target: "_blank", rel: "noopener", style: "text-decoration:none;color:inherit;border-left:3px solid var(--c)" }, [h("b", {}, "Live now: " + cfg.live.title), h("span", { class: "mu" }, "Read the service as captions in your language. Opens in a new tab.")]));
     ({ ask: viewAsk, visit: viewVisit, groups: viewGroups, week: viewWeek, prayer: viewPrayer, care: viewCare, moving: viewMoving }[S.tab] || viewAsk)();
     bodyEl.scrollTop = bodyEl.scrollHeight;
     var sel = tabsEl.querySelector("[aria-selected=true]");

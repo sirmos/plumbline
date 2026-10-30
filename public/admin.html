@@ -118,12 +118,18 @@ th,td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);vertical
 .task{display:flex;flex-direction:row;gap:8px;align-items:flex-start;font-size:13.5px;font-weight:400} .task input{margin-top:3px} .task.done span{text-decoration:line-through;color:var(--muted)}
 .empty{border:1px dashed var(--line);border-radius:8px;padding:22px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:8px;align-items:center}
 .grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px} @media (max-width:760px){.grid4{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.pl-grid{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:20px;align-items:start} @media (max-width:760px){.pl-grid{grid-template-columns:minmax(0,1fr)}}
+.qrbox{background:#fff;border-radius:10px;padding:6px;line-height:0;width:max-content;max-width:100%} .qrbox svg{width:100%;height:auto;max-width:240px}
+.meter{height:10px;background:var(--soft);border-radius:5px;overflow:hidden} .meter i{display:block;height:100%;width:0;background:var(--green);transition:width .08s linear}
+.cap{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px;align-items:start} .cap:first-child{border-top:0} .cap .n{font:500 11px var(--mono);color:var(--muted);padding-top:3px}
+.chip{display:inline-flex;gap:6px;align-items:center;background:var(--soft);border-radius:99px;padding:4px 10px;font-size:13px} .chip b{font-family:var(--mono);font-weight:500}
 .togs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px 18px}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <div id="toast" class="toast" role="status" hidden></div>
+<script src="/qr.js"></script>
 <script>
 "use strict";
 const $=s=>document.querySelector(s);
@@ -172,11 +178,11 @@ function authView(){
 }
 
 /* ---------- app shell ---------- */
-const NAV=[["Daily",[["overview","Overview"],["queue","Review queue"],["sermon","Sermon to week"]]],
+const NAV=[["Daily",[["overview","Overview"],["pulpit","Live Pulpit"],["queue","Review queue"],["sermon","Sermon to week"]]],
  ["People",[["visitors","Visitors"],["care","Care board"],["insight","What people carry"]]],
  ["Set up",[["start","Get started"],["church","Church & features"],["doctrine","Doctrine & rules"],["faq","Guide answers"],["groups","Small groups"],["partners","Partner churches"]]],
  ["Publish",[["install","Install on your website"],["policy","AI use policy"],["log","AI log"],["engine","AI engine"]]]];
-const badge=k=>{const n=k==="queue"?ST.queue.filter(q=>q.status==="pending").length:k==="visitors"?ST.visitors.filter(v=>v.status==="new").length:k==="care"?ST.care.filter(x=>x.status==="new").length:0;return n?`<span class="count">${n}</span>`:"";};
+const badge=k=>{if(k==="pulpit"&&PUL.live)return `<span class="count" style="background:var(--green)">live</span>`;const n=k==="queue"?ST.queue.filter(q=>q.status==="pending").length:k==="visitors"?ST.visitors.filter(v=>v.status==="new").length:k==="care"?ST.care.filter(x=>x.status==="new").length:0;return n?`<span class="count">${n}</span>`:"";};
 function shell(inner){
   const pend=ST.queue.filter(q=>q.status==="pending").length;
   $("#root").innerHTML=`<div class="app"><aside>
@@ -213,6 +219,7 @@ function checklist(){
   const done=items.filter(i=>i[1]).length;
   return `<section class="panel"><div class="row" style="justify-content:space-between"><h3>Your setup</h3><span class="mono muted">${done} of ${items.length}</span></div><div class="progress"><i style="width:${done/items.length*100}%"></i></div><div class="check-list">${items.map(i=>`<div class="step"><span class="dot ${i[1]?"done":""}">${i[1]?"✓":""}</span><span>${esc(i[0])}</span><button class="btn ghost sm" data-go="${i[2]}">${i[3]}</button></div>`).join("")}</div></section>`;}
 const VIEWS={
+ pulpit:()=>intro("Live Pulpit","Show a QR code in the room. Anyone who scans it reads your service as live captions in their own language. Only the languages people currently have open are translated.")+`<div id="pl-root"><p class="muted">Loading…</p></div>`,
  start:()=>intro("Welcome, "+esc(ST.pastor==="Pastor"?"pastor":ST.pastor),"Plumb Line gives your church a helper that answers visitors, shares your weekly reading plan, receives prayer requests and writes letters of commendation. It drafts. You decide.")+checklist(),
 
  overview:()=>{
@@ -283,7 +290,7 @@ const VIEWS={
   `<form class="panel" id="f-church"><label>Church name<input type="text" id="c-name" value="${esc(ST.name)}" maxlength="80"></label><label>Pastor's name (shown to members)<input type="text" id="c-pastor" value="${esc(ST.pastor)}" maxlength="60"></label>
   <label>How can a visitor reach a person?<input type="text" id="c-contact" value="${esc(ST.contact||"")}" maxlength="240" placeholder="Call 555-0100 or email office@yourchurch.org"></label>
   <label>Widget color<div class="row"><input type="color" id="c-color" value="${esc(ST.color)}"><span class="muted">Text color adjusts automatically.</span></div></label>
-  <span class="label">Tabs in your widget</span><div class="togs">${[["guide","Ask: answers from your guide"],["visit","New here?: first-time visitors"],["groups","Groups: find a small group"],["week","This week: reading plan"],["prayer","Prayer requests"],["care","Help: meals, rides, visits"],["moving","Moving?: letters to partner churches"]].map(([k,l])=>`<label class="check"><input type="checkbox" data-feat="${k}" ${ST.features[k]?"checked":""}>${l}</label>`).join("")}</div>
+  <span class="label">Tabs in your widget</span><div class="togs">${[["guide","Ask: answers from your guide"],["visit","New here?: first-time visitors"],["groups","Groups: find a small group"],["week","This week: reading plan"],["prayer","Prayer requests"],["care","Help: meals, rides, visits"],["moving","Moving?: letters to partner churches"],["live","Live Pulpit: live captions in 12 languages"]].map(([k,l])=>`<label class="check"><input type="checkbox" data-feat="${k}" ${ST.features[k]?"checked":""}>${l}</label>`).join("")}</div>
   <p class="muted">Groups only appears once you add an open group. Moving? only appears once you add a partner church.</p>
   <label>Urgent alert address (optional)<input type="text" id="c-alert" value="${esc(ST.alertWebhook||"")}" placeholder="https://hooks.slack.com/services/..." maxlength="300"></label>
   <p class="muted">Paste a Slack, Discord or Zapier incoming-webhook address. When someone's words trigger the safety rule, or a care request arrives, a short message with no private details is sent there so you hear immediately instead of when you next open this page.</p>
@@ -318,8 +325,116 @@ function policyText(){const c=ST,r=c.rules;
 async function save(patch,msg){try{const j=await api("settings","PUT",patch);ST=j.church;toast(msg||"Saved.");go();}catch(e){toast(e.message);}}
 function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();}
 function copy(text,fallbackEl){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text):Promise.reject()).then(()=>toast("Copied."),()=>{if(fallbackEl){const r=document.createRange();r.selectNodeContents(fallbackEl);const s=getSelection();s.removeAllRanges();s.addRange(r);}toast("Select and copy the highlighted text.");});}
+
+/* ---------- Live Pulpit console ----------
+   Lives outside the normal re-render so the microphone keeps running while the pastor moves between pages. */
+const PUL={live:false,sid:null,mic:false,stream:null,rec:null,mime:"",ctx:null,an:null,peak:0,last:0,queue:[],busy:false,note:"",stats:{sent:0,skipped:0,failed:0},poll:null,data:null,wake:null};
+const viewerUrl=()=>ORIGIN+"/live?church="+encodeURIComponent(ST.id);
+async function plRefresh(){try{PUL.data=await api("pulpit");PUL.live=!!PUL.data.active;PUL.sid=PUL.data.active?PUL.data.active.sid:null;}catch(e){}}
+function plNote(t){PUL.note=t;const n=$("#pl-note");if(n)n.textContent=t;}
+function plDraw(){
+  const root=$("#pl-root");if(!root||VIEW!=="pulpit")return;const D=PUL.data;if(!D){root.innerHTML='<p class="muted">Loading…</p>';return;}
+  const A=D.active, noStt=!D.sttLive;
+  if(!A){
+    root.innerHTML=(noStt?`<div class="banner">No speech provider is set up on this server, so the microphone cannot be used. Add <span class="mono">GROQ_API_KEY</span> (free), or type captions yourself after you start.</div>`:"")+
+    `<form class="panel" id="pl-start"><h3>Start a service</h3>
+      <div class="two"><label>Title<input type="text" id="pl-title" maxlength="80" value="Sunday service"></label>
+      <label>Language you will speak<select id="pl-lang">${D.languages.map(l=>`<option ${l==="English"?"selected":""}>${esc(l)}</option>`).join("")}</select></label></div>
+      <p class="muted" style="font-size:13.5px">Speech recognition is strongest for English, Spanish, French, Portuguese, Swahili, Arabic, Chinese and Hindi. It is weaker for Yoruba, Hausa and Igbo, so check a few lines before relying on those as the language you speak.</p>
+      <div class="row"><button class="btn" id="pl-go">Start service</button></div></form>`+plPast();
+    $("#pl-start").onsubmit=async e=>{e.preventDefault();$("#pl-go").disabled=true;try{await api("pulpit/start","POST",{title:$("#pl-title").value,lang:$("#pl-lang").value});await plRefresh();await refresh();plDraw();go();}catch(er){toast(er.message);$("#pl-go").disabled=false;}};
+    root.querySelectorAll("[data-tx]").forEach(b=>b.onclick=async()=>{try{const j=await api("pulpit/transcript?id="+b.dataset.tx);download((j.title||"service").replace(/[^\w-]+/g,"-")+".txt",j.text,"text/plain");}catch(er){toast(er.message);}});
+    return;
+  }
+  const url=viewerUrl(), v=A.viewers||{}, total=Object.values(v).reduce((a,b)=>a+b,0);
+  root.innerHTML=`<div class="pl-grid">
+    <section class="panel"><span class="label">Scan to follow along</span><div class="qrbox">${PlumbQR.svg(url,{size:240})}</div>
+      <div class="mono" style="font-size:12px;word-break:break-all">${esc(url)}</div>
+      <div class="row"><button class="btn ghost sm" id="pl-copy">Copy link</button><a class="btn ghost sm" href="${esc(url)}" target="_blank" rel="noopener" style="text-decoration:none">Open viewer</a></div>
+      <span class="label" style="margin-top:6px">In the room right now</span>
+      <div class="row" id="pl-views">${plViews(v)}</div></section>
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      <section class="panel"><div class="row" style="justify-content:space-between"><h3>${esc(A.title)}</h3><span class="pill live">Live · ${esc(A.lang)}</span></div>
+        ${noStt?`<div class="banner">No speech provider is set up, so type captions below.</div>`:`<div class="row"><button class="btn" id="pl-mic">${PUL.mic?"Stop microphone":"Start microphone"}</button><div class="meter" style="flex:1;min-width:120px" aria-hidden="true"><i id="pl-lvl"></i></div></div>
+        <p class="muted" id="pl-note" role="status" style="font-size:13.5px">${esc(PUL.note||"Press Start microphone and speak. Keep this tab open during the service.")}</p>`}
+        <form class="row" id="pl-type" style="flex-wrap:nowrap"><input type="text" id="pl-line" maxlength="400" placeholder="Or type a caption and press Enter" aria-label="Type a caption" style="flex:1"><button class="btn ghost">Send</button></form>
+      </section>
+      <section class="panel"><h3>Latest captions</h3><div id="pl-recent">${plRecent(A)}</div>
+        <div class="row" style="justify-content:space-between"><span class="muted" id="pl-stats" style="font-size:13px">${plStats(A)}</span><button class="btn warn sm" id="pl-end">End service</button></div></section>
+    </div></div>`+plPast();
+  $("#pl-copy").onclick=()=>copy(url);
+  if($("#pl-mic"))$("#pl-mic").onclick=()=>PUL.mic?plMicStop():plMicStart();
+  $("#pl-type").onsubmit=async e=>{e.preventDefault();const t=$("#pl-line").value.trim();if(!t)return;$("#pl-line").value="";try{await api("pulpit/line","POST",{sid:PUL.sid,text:t});plTick();}catch(er){toast(er.message);}};
+  $("#pl-end").onclick=async()=>{if(!confirm("End this service? Viewers will see that it has ended and the transcript is saved."))return;plMicStop();try{await api("pulpit/end","POST",{sid:PUL.sid});await plRefresh();await refresh();go();toast("Service ended. Transcript saved.");}catch(er){toast(er.message);}};
+  root.querySelectorAll("[data-tx]").forEach(b=>b.onclick=async()=>{try{const j=await api("pulpit/transcript?id="+b.dataset.tx);download((j.title||"service").replace(/[^\w-]+/g,"-")+".txt",j.text,"text/plain");}catch(er){toast(er.message);}});
+}
+const plViews=v=>Object.keys(v).length?Object.entries(v).map(([l,n])=>`<span class="chip">${esc(l)}</span>`).join(""):`<span class="muted" style="font-size:13.5px">Nobody has opened the page yet.</span>`;
+const plRecent=A=>A.recent.length?A.recent.slice().reverse().map(x=>`<div class="cap"><span class="n">${x.n}</span><span>${esc(x.o)}</span><span class="muted mono" style="font-size:11px">${x.langs.length?x.langs.length+" lang":""}</span></div>`).join(""):`<p class="muted">Nothing yet. Captions appear here as you speak or type.</p>`;
+const plStats=A=>`${A.lines} lines · ${A.stats.silent} silent chunks skipped · ${A.stats.failed} speech errors · ${A.stats.translateFailed} translation errors`;
+function plPast(){const sv=(ST.pulpit&&ST.pulpit.services)||[];return sv.length?`<section class="panel"><h3>Past services</h3><div class="scroll"><table><tbody>${sv.map(x=>`<tr><td><b>${esc(x.title)}</b><br><span class="muted">${new Date(x.at).toLocaleString()}</span></td><td class="mono">${x.count} lines</td><td><button class="btn ghost sm" data-tx="${esc(x.id)}">Download transcript</button></td></tr>`).join("")}</tbody></table></div><p class="muted" style="font-size:13px">Only the text you spoke is saved, not translations. It can feed Sermon to week.</p></section>`:"";}
+async function plTick(){
+  if(!TOKEN){return;}
+  try{await plRefresh();}catch(e){}
+  if(VIEW!=="pulpit"||!$("#pl-root"))return;
+  const A=PUL.data&&PUL.data.active;
+  if(!!A!==!!$("#pl-end")||(A&&$("#pl-views")===null)){plDraw();return;}
+  if(A){$("#pl-views").innerHTML=plViews(A.viewers||{});$("#pl-recent").innerHTML=plRecent(A);$("#pl-stats").textContent=plStats(A);}
+}
+function plStartPoll(){clearInterval(PUL.poll);PUL.poll=setInterval(plTick,2500);}
+async function initPulpit(){PUL.data=PUL.data||null;plDraw();await plRefresh();plDraw();plStartPoll();}
+
+async function plMicStart(){
+  try{
+    PUL.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  }catch(e){plNote("The microphone was blocked. Allow it in the browser's address bar, then try again.");return;}
+  PUL.mime=["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg;codecs=opus"].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t))||"";
+  if(!window.MediaRecorder){plNote("This browser cannot record audio. Use Chrome, Edge or Safari, or type captions.");return;}
+  PUL.mic=true;PUL.peak=0;
+  try{PUL.ctx=new (window.AudioContext||window.webkitAudioContext)();PUL.an=PUL.ctx.createAnalyser();PUL.an.fftSize=1024;PUL.ctx.createMediaStreamSource(PUL.stream).connect(PUL.an);plMeter();}catch(e){}
+  try{if(navigator.wakeLock)PUL.wake=await navigator.wakeLock.request("screen");}catch(e){}
+  const b=$("#pl-mic");if(b)b.textContent="Stop microphone";plNote("Listening. Speak normally.");plCycle();
+}
+function plMicStop(){
+  PUL.mic=false;clearTimeout(PUL.cycle);try{if(PUL.rec&&PUL.rec.state!=="inactive")PUL.rec.stop();}catch(e){}
+  if(PUL.stream)PUL.stream.getTracks().forEach(t=>t.stop());PUL.stream=null;
+  try{if(PUL.ctx)PUL.ctx.close();}catch(e){}PUL.ctx=null;PUL.an=null;try{if(PUL.wake)PUL.wake.release();}catch(e){}
+  const b=$("#pl-mic");if(b)b.textContent="Start microphone";const l=$("#pl-lvl");if(l)l.style.width="0";plNote("Microphone is off.");
+}
+function plMeter(){
+  if(!PUL.an||!PUL.mic)return;const buf=new Float32Array(PUL.an.fftSize);PUL.an.getFloatTimeDomainData(buf);
+  let sum=0;for(const x of buf)sum+=x*x;const rms=Math.sqrt(sum/buf.length);PUL.peak=Math.max(PUL.peak,rms);
+  const l=$("#pl-lvl");if(l)l.style.width=Math.min(100,rms*400)+"%";requestAnimationFrame(plMeter);
+}
+// Record in short, complete files. Each one is a valid audio file the speech service can read on its own.
+function plCycle(){
+  if(!PUL.mic||!PUL.stream)return;
+  const rec=new MediaRecorder(PUL.stream,PUL.mime?{mimeType:PUL.mime}:{}),parts=[],peak0=()=>{const p=PUL.peak;PUL.peak=0;return p;};
+  rec.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data);};
+  rec.onstop=()=>{const p=peak0();if(!parts.length)return;const blob=new Blob(parts,{type:rec.mimeType||PUL.mime||"audio/webm"});
+    if(p<0.008){PUL.stats.skipped++;return;}  // quiet room: do not spend speech quota on silence
+    PUL.queue.push(blob);while(PUL.queue.length>3){PUL.queue.shift();plNote("Falling behind. The oldest audio was dropped to keep captions live.");}plSend();};
+  rec.start();PUL.rec=rec;PUL.cycle=setTimeout(()=>{try{rec.stop();}catch(e){}plCycle();},7000);
+}
+async function plSend(){
+  if(PUL.busy)return;PUL.busy=true;
+  while(PUL.queue.length&&PUL.sid){
+    const blob=PUL.queue.shift();
+    try{
+      const r=await fetch("/api/admin/pulpit/audio?sid="+encodeURIComponent(PUL.sid),{method:"POST",headers:{authorization:"Bearer "+TOKEN,"content-type":blob.type},body:blob});
+      const j=await r.json().catch(()=>({}));
+      if(r.status===401){plMicStop();signOut();break;}
+      if(r.status===503||r.status===404){plNote(j.error||"The server could not take audio.");plMicStop();break;}
+      if(!r.ok){PUL.stats.failed++;plNote(j.error||"A chunk was rejected. Carrying on.");continue;}
+      if(j.ok===false){PUL.stats.failed++;plNote("Speech service is busy ("+(j.tried||[]).join(", ")+"). Carrying on; type a caption if it persists.");continue;}
+      if(j.text){PUL.last=Date.now();plNote("Heard: "+j.text.slice(0,90));}
+    }catch(e){PUL.stats.failed++;plNote("Connection problem. Carrying on.");}
+  }
+  PUL.busy=false;
+}
+
 function bind(){
   const main=$(".content");
+  if(VIEW==="pulpit")initPulpit();else clearInterval(PUL.poll);
   main.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{VIEW=b.dataset.go;go();window.scrollTo(0,0);});
   main.querySelectorAll("[data-act]").forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api("queue/"+b.dataset.id+"/"+b.dataset.act,"POST");await refresh();toast(b.dataset.act==="approve"?"Approved and logged.":"Rejected and logged.");go();}catch(e){toast(e.message);b.disabled=false;}});
   main.querySelectorAll("[data-edit]").forEach(t=>t.oninput=()=>{clearTimeout(t.h);t.h=setTimeout(()=>api("queue/"+t.dataset.edit,"PATCH",{body:t.value}).catch(()=>{}),500);});

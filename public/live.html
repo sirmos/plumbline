@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Live captions</title>
+<style>
+:root{--bg:#F4F6F5;--fg:#111C19;--muted:#5A6B66;--line:#D3DBD8;--surface:#FFFFFF;--accent:#0E5A58;--accent-fg:#fff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0C1412;--fg:#EAF2EF;--muted:#9BB0AA;--line:#273733;--surface:#14201D;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;min-height:100dvh}
+header{padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;border-bottom:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top b{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:99px;background:var(--line);color:var(--muted);white-space:nowrap}
+.pill.live{background:#D6EBDD;color:#1F6B3A} .pill.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#1F6B3A;margin-right:6px;animation:pulse 1.6s ease-in-out infinite}
+@media (prefers-color-scheme:dark){.pill.live{background:#153222;color:#7FD09A}.pill.live::before{background:#7FD09A}}
+@keyframes pulse{50%{opacity:.25}} @media (prefers-reduced-motion:reduce){.pill.live::before{animation:none}}
+.bar{display:flex;gap:8px;align-items:center}
+select{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.sz{display:flex;gap:6px}
+.sz button,.chip{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:10px;padding:9px 13px;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+main{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+#log{flex:1;overflow-y:auto;padding:18px 16px 110px;display:flex;flex-direction:column;gap:18px;scroll-behavior:smooth}
+.ln{max-width:46ch;margin:0 auto;width:100%}
+.ln .t{font-size:var(--fs,24px);line-height:1.35;font-weight:500;overflow-wrap:anywhere}
+.ln .t.wait{color:var(--muted)}
+.ln .o{font-size:calc(var(--fs,24px) * .66);color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.ln.new .t{animation:in .35s ease-out} @keyframes in{from{opacity:0;transform:translateY(6px)}} @media (prefers-reduced-motion:reduce){.ln.new .t{animation:none}}
+.msg{max-width:42ch;margin:12vh auto 0;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;padding:0 20px}
+.msg h1{margin:0;color:var(--fg);font-size:24px;line-height:1.2}
+#jump{position:absolute;left:50%;bottom:86px;transform:translateX(-50%);background:var(--accent);color:var(--accent-fg);border:0;border-radius:99px;padding:10px 18px;font:inherit;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer}
+footer{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+footer .acts{display:flex;gap:8px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><b id="church">Live captions</b><span class="pill" id="state">Connecting</span></div>
+  <div class="bar">
+    <select id="lang" aria-label="Caption language"></select>
+    <div class="sz" role="group" aria-label="Text size"><button id="sm" aria-label="Smaller text">A−</button><button id="lg" aria-label="Larger text">A+</button></div>
+  </div>
+</header>
+<main>
+  <div id="log" role="log" aria-live="polite" aria-label="Live captions"></div>
+  <button id="jump" hidden>Jump to live ↓</button>
+</main>
+<footer>
+  <span>Captions are made by AI and can contain mistakes.</span>
+  <span class="acts"><button class="chip" id="orig" aria-pressed="false">Show original</button><button class="chip" id="dl">Save text</button></span>
+</footer>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const Q=new URLSearchParams(location.search), CH=(Q.get("church")||"").toLowerCase();
+const LANGS=["English","Spanish","French","Portuguese","Yoruba","Igbo","Hausa","Nigerian Pidgin","Swahili","Arabic","Chinese","Hindi"];
+const NAV={en:"English",es:"Spanish",fr:"French",pt:"Portuguese",yo:"Yoruba",ig:"Igbo",ha:"Hausa",sw:"Swahili",ar:"Arabic",zh:"Chinese",hi:"Hindi"};
+const store={get(k){try{return localStorage.getItem(k);}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+let lang=store.get("pl-live-lang"); if(!LANGS.includes(lang)) lang=NAV[(navigator.language||"en").slice(0,2).toLowerCase()]||"English";
+let fs=Number(store.get("pl-live-fs"))||24, showOrig=store.get("pl-live-orig")==="1";
+let sid=null, doneSid=null, since=0, source="English", lines=new Map(), seen=new Map(), ended=false, stick=true, timer=null, lock=null;
+document.documentElement.style.setProperty("--fs",fs+"px");
+$("#lang").innerHTML=LANGS.map(l=>`<option>${l}</option>`).join(""); $("#lang").value=lang;
+$("#orig").setAttribute("aria-pressed",showOrig);
+
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const get=async p=>{const r=await fetch("/api/public/"+encodeURIComponent(CH)+"/live"+p,{cache:"no-store"});if(!r.ok)throw Object.assign(new Error("http"),{status:r.status});return r.json();};
+function setState(txt,cls){const s=$("#state");s.textContent=txt;s.className="pill"+(cls?" "+cls:"");}
+function message(h,p){$("#log").innerHTML=`<div class="msg"><h1>${esc(h)}</h1><p>${esc(p||"")}</p></div>`;lines.clear();}
+
+function render(){
+  const log=$("#log"); if(!lines.size&&!ended){return;}
+  const arr=[...lines.values()].sort((a,b)=>a.n-b.n), now=Date.now();
+  log.innerHTML=arr.map(l=>{
+    const same=lang===source, pending=!same&&l.t==null;
+    const main=pending?l.o:(l.t||l.o);
+    return `<div class="ln" data-n="${l.n}"><div class="t${pending?" wait":""}">${esc(main)}</div>${showOrig&&!same&&l.t!=null?`<div class="o">${esc(l.o)}</div>`:""}${pending&&now-(seen.get(l.n)||now)<15000?`<div class="o">Translating…</div>`:""}</div>`;
+  }).join("")+(ended?`<div class="msg" style="margin-top:20px"><h1>The service has ended</h1><p>You can save the text with the button below.</p></div>`:"");
+  if(stick) log.scrollTop=log.scrollHeight;
+}
+function merge(d){
+  source=d.source||source;
+  for(const l of d.lines){ if(!seen.has(l.n)) seen.set(l.n,Date.now()); lines.set(l.n,l); }
+  // Lines whose translation has not arrived yet are asked for again until it does, or for 15 seconds.
+  const now=Date.now(); let low=d.last;
+  for(const l of lines.values()) if(lang!==source&&l.t==null&&now-(seen.get(l.n)||now)<15000) low=Math.min(low,l.n-1);
+  since=Math.max(0,Math.min(d.last,low));
+}
+async function tick(){
+  clearTimeout(timer); let wait=2000;
+  try{
+    if(!sid){
+      const a=await get(""); $("#church").textContent=a.church||"Live captions";
+      if(a.color&&/^#[0-9a-f]{6}$/i.test(a.color))document.documentElement.style.setProperty("--accent",a.color);
+      if(a.active&&a.sid!==doneSid){sid=a.sid;source=a.source;since=0;lines.clear();seen.clear();ended=false;document.title=(a.title||"Live")+" · "+a.church;setState("Live","live");message("Listening…","Captions will appear here in a moment.");}
+      else if(!ended){setState("Waiting");message("No service is live right now","This page will start by itself when the service begins. You can leave it open.");wait=5000;}
+      else wait=8000; // the finished transcript stays on screen until the next service starts
+    }
+    if(sid){
+      const d=await get("/"+sid+"?since="+since+"&lang="+encodeURIComponent(lang));
+      const first=!lines.size, hadPending=[...lines.values()].some(l=>lang!==source&&l.t==null); merge(d);
+      if(d.lines.length||hadPending){render(); if(first)$("#log").scrollTop=$("#log").scrollHeight;}
+      if(d.ended){ended=true;doneSid=sid;setState("Ended");render();sid=null;wait=8000;} // look for the next service
+    }
+  }catch(e){
+    if(e.status===404&&sid){sid=null;}
+    else if(e.status===404){setState("Off");message("Live captions are not available","This church has not switched them on.");return;}
+    else setState("Reconnecting");
+    wait=4000;
+  }
+  timer=setTimeout(tick,wait);
+}
+$("#lang").onchange=e=>{lang=e.target.value;store.set("pl-live-lang",lang);since=0;lines.clear();seen.clear();stick=true;if(sid)message("Switching…","");tick();};
+$("#sm").onclick=()=>{fs=Math.max(16,fs-3);store.set("pl-live-fs",fs);document.documentElement.style.setProperty("--fs",fs+"px");};
+$("#lg").onclick=()=>{fs=Math.min(48,fs+3);store.set("pl-live-fs",fs);document.documentElement.style.setProperty("--fs",fs+"px");};
+$("#orig").onclick=()=>{showOrig=!showOrig;store.set("pl-live-orig",showOrig?"1":"0");$("#orig").setAttribute("aria-pressed",showOrig);render();};
+$("#dl").onclick=()=>{
+  const txt=[...lines.values()].sort((a,b)=>a.n-b.n).map(l=>lang===source?l.o:(l.t||l.o)).join("\n");
+  if(!txt)return; const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain"}));a.download="service-"+lang.toLowerCase().replace(/\s+/g,"-")+".txt";document.body.appendChild(a);a.click();a.remove();
+};
+const log=$("#log");
+log.addEventListener("scroll",()=>{stick=log.scrollHeight-log.scrollTop-log.clientHeight<80;$("#jump").hidden=stick;});
+$("#jump").onclick=()=>{stick=true;log.scrollTop=log.scrollHeight;$("#jump").hidden=true;};
+document.addEventListener("visibilitychange",async()=>{if(!document.hidden){tick();try{if(navigator.wakeLock&&sid)lock=await navigator.wakeLock.request("screen");}catch(e){}}});
+if(!/^[a-z0-9-]{3,48}$/.test(CH)){setState("Off");message("This link is missing its church","Scan the QR code shown in the service again.");}
+else{tick();try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(l=>lock=l).catch(()=>{});}catch(e){}}
+</script>
+</body>
+</html>
