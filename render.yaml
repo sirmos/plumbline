@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: plumb-line
+    runtime: docker
+    plan: starter            # a persistent disk needs a paid plan
+    disk: { name: data, mountPath: /data, sizeGB: 1 }
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false          # paste a free key from console.groq.com in the Render dashboard
+      - key: CEREBRAS_API_KEY
+        sync: false          # optional second provider, used if the first is busy
+      - key: SECRET
+        generateValue: true

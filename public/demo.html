@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Harbor Church (sample site)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Young+Serif&display=swap">
+<style>
+/* A made-up church homepage, used only to show how the widget sits on a real site. */
+:root{--ink:#1B2A2E;--sea:#164B58;--sand:#F1EEE7;--rope:#B4672D;--paper:#FBFAF7}
+*{box-sizing:border-box} body{margin:0;font:16px/1.6 "Instrument Sans",system-ui,sans-serif;color:var(--ink);background:var(--paper)}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px max(20px,5vw);border-bottom:1px solid #E1DDD3}
+header b{font:400 22px "Young Serif",Georgia,serif;color:var(--sea)} nav{display:flex;gap:22px;font-weight:500;font-size:15px} nav a{color:var(--ink);text-decoration:none}
+.hero{background:var(--sea);color:#F4F7F5;padding:clamp(48px,9vw,110px) max(20px,5vw)} .hero h1{font:400 clamp(34px,6vw,64px)/1.05 "Young Serif",Georgia,serif;margin:0 0 16px;max-width:16ch} .hero p{max-width:50ch;font-size:19px;opacity:.9;margin:0 0 24px}
+.hero a{display:inline-block;background:var(--rope);color:#fff;padding:12px 22px;text-decoration:none;font-weight:600;border-radius:4px}
+section{padding:48px max(20px,5vw);display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:28px;max-width:1100px;margin:0 auto}
+section h3{font:400 22px "Young Serif",Georgia,serif;margin:0 0 6px}
+footer{padding:28px max(20px,5vw);background:var(--sand);color:#4A5A5E;font-size:14px}
+.note{background:#FFF3D6;border-bottom:1px solid #E6D3A0;padding:10px max(20px,5vw);font-size:14px}
+@media (max-width:640px){nav{display:none}}
+</style>
+</head>
+<body>
+<div class="note">This is a sample church website, not a real church. The chat button at the bottom right is the Plumb Line widget, added with one line of code.</div>
+<header><b>Harbor Church</b><nav><a href="#">Visit</a><a href="#">Sermons</a><a href="#">Groups</a><a href="#">Give</a></nav></header>
+<div class="hero"><h1>A place to come as you are.</h1><p>Sundays at 10:00. Coffee is on, kids are welcome, and nobody will ask you to stand up and introduce yourself.</p><a href="#">Plan your visit</a></div>
+<section><div><h3>New here?</h3><p>Park in the lot behind the building. A greeter will help you find the door and the kids' rooms.</p></div><div><h3>Sunday messages</h3><p>Watch or listen to this week's message and read the reading plan that goes with it.</p></div><div><h3>Groups</h3><p>Small groups meet weekly in homes across the neighborhood.</p></div></section>
+<footer>© Harbor Church, a fictional church for demonstration. 412 Marina Road.</footer>
+<script>
+(function(){
+  var id=new URLSearchParams(location.search).get("church");
+  if(!id){var n=document.createElement("div");n.className="note";n.textContent="Add ?church=YOUR-CHURCH-ID to the address to load your own widget.";document.body.insertBefore(n,document.body.children[1]);return;}
+  var s=document.createElement("script");s.src="/widget.js";s.async=true;s.setAttribute("data-church",id.replace(/[^a-z0-9-]/gi,""));document.body.appendChild(s);
+})();
+</script>
+</body>
+</html>

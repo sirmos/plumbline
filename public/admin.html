@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Plumb Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Young+Serif&display=swap">
+<style>
+/* Layout: sign-in screen, then a sidebar app. Pastor tools on the left, one working surface on the right. */
+:root{
+  --bg:#E9EEEC; --surface:#F7F9F8; --fg:#14201D; --muted:#52625E; --line:#C9D3D0; --soft:#DDE5E2;
+  --accent:#0E5A58; --accent-fg:#F2FAF9;
+  --amber:#8F5400; --amber-bg:#F6E7C8; --red:#A32A2A; --red-bg:#F6D9D6; --green:#1F6B3A; --green-bg:#D6EBDD;
+  --display:"Young Serif",Georgia,serif; --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace; color-scheme:light}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0F1816; --surface:#16221F; --fg:#E3ECE9; --muted:#93A6A1; --line:#2A3B37; --soft:#1D2D29;
+  --accent:#5FC3BC; --accent-fg:#082321;
+  --amber:#E5A845; --amber-bg:#3A2E12; --red:#F08A82; --red-bg:#3E1B18; --green:#7FD09A; --green-bg:#153222; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body)}
+h1,h2,h3{font-family:var(--display);font-weight:400;text-wrap:balance;margin:0}
+h2{font-size:28px;line-height:1.15} h3{font-size:19px;line-height:1.2}
+p{margin:0} .muted{color:var(--muted)} .mono{font-family:var(--mono)}
+.label{font:500 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+/* auth */
+.auth{max-width:980px;margin:0 auto;padding:48px max(16px,env(safe-area-inset-left,0px)) 64px;display:flex;flex-direction:column;gap:32px}
+.hero{display:flex;gap:20px;align-items:flex-end}
+.hero svg{color:var(--accent);flex:none}
+.sway{transform-origin:20px 0;animation:sway 7s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+@media (prefers-reduced-motion:reduce){.sway{animation:none}}
+.hero h1{font-size:clamp(34px,6vw,52px);line-height:1}
+.hero p{margin-top:10px;max-width:52ch;color:var(--muted);font-size:17px}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.flow div{border-left:2px solid var(--accent);padding-left:12px;display:flex;flex-direction:column;gap:4px}
+/* app shell */
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+@media (max-width:860px){.app{grid-template-columns:minmax(0,1fr)}}
+aside{background:var(--surface);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;height:100vh;overflow-y:auto}
+@media (max-width:860px){aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}}
+.logo{display:flex;gap:10px;align-items:flex-end;padding:0 8px} .logo svg{color:var(--accent)} .logo b{font:400 22px var(--display)}
+.who{padding:0 8px;display:flex;flex-direction:column;gap:2px}
+nav{display:flex;flex-direction:column;gap:2px}
+@media (max-width:860px){nav{flex-direction:row;flex-wrap:wrap}}
+nav .grp{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px}
+@media (max-width:860px){nav .grp{display:none}}
+nav button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:6px;cursor:pointer;font-weight:500;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;border-left:2px solid transparent}
+nav button[aria-current="page"]{background:var(--soft);color:var(--fg);border-left-color:var(--accent)}
+.count{background:var(--accent);color:var(--accent-fg);border-radius:10px;font:500 11px/1 var(--mono);padding:3px 6px}
+.content{padding:28px max(20px,env(safe-area-inset-right,0px)) 64px 28px;display:flex;flex-direction:column;gap:22px;min-width:0;max-width:980px}
+@media (max-width:860px){.content{padding:20px 16px 56px}}
+.intro{display:flex;flex-direction:column;gap:6px;max-width:66ch}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);padding:9px 16px;border-radius:6px;cursor:pointer;font-weight:600}
+.btn.ghost{background:none;color:var(--accent)} .btn.warn{background:none;border-color:var(--red);color:var(--red)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:wait}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+label{display:flex;flex-direction:column;gap:6px;font-weight:500;font-size:14px}
+label.check{flex-direction:row;align-items:flex-start;gap:8px;font-weight:400} label.check input{margin-top:4px}
+input[type=text],input[type=password],textarea,select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%}
+input[type=color]{width:56px;height:36px;padding:2px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+textarea{min-height:100px;resize:vertical;line-height:1.5}
+.pill{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 7px;border-radius:4px;background:var(--soft);color:var(--muted)}
+.pill.ok{background:var(--green-bg);color:var(--green)} .pill.no{background:var(--red-bg);color:var(--red)} .pill.wait{background:var(--amber-bg);color:var(--amber)} .pill.live{background:var(--green-bg);color:var(--green)}
+.banner{background:var(--amber-bg);color:var(--amber);border-radius:6px;padding:11px 14px;font-size:14px}
+/* plumb */
+.plumb{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px}
+.plumb span{display:flex;flex-direction:column;gap:2px} .plumb b{font-weight:500;letter-spacing:.06em;text-transform:uppercase} .plumb i{font-style:normal;color:var(--muted)}
+.plumb.true{color:var(--green)} .plumb.lean{color:var(--amber)} .plumb.off{color:var(--red)}
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column}
+.card>header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.card>header .meta{display:flex;flex-direction:column;gap:8px;min-width:0}
+.card .body{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.card>footer{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
+.flag{background:var(--amber-bg);color:var(--amber);border-radius:6px;padding:9px 11px;font-size:13.5px} .flag.red{background:var(--red-bg);color:var(--red)}
+.day{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;padding-block:12px;border-top:1px solid var(--line)} .day:first-child{border-top:0}
+.day .d{font:500 12px/1.2 var(--mono);color:var(--accent)} .ref{font:500 13px var(--mono);color:var(--accent)}
+details{font-size:13px;color:var(--muted)} details summary{cursor:pointer} blockquote{margin:6px 0 0;padding-left:10px;border-left:2px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{border-left:2px solid var(--accent);padding-left:10px} .stat b{font:400 30px var(--display);display:block}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{display:grid;grid-template-columns:130px minmax(0,1fr) 30px;gap:10px;align-items:center;font-size:13.5px}
+.bar .t{height:10px;background:var(--soft);border-radius:2px} .bar .t i{display:block;height:100%;background:var(--accent);border-radius:2px} .bar .n{font-family:var(--mono);text-align:right}
+.scroll{overflow-x:auto} table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);vertical-align:top} th{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-top:0}
+.check-list{display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line)} .step:first-child{border-top:0}
+.dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px}
+.dot.done{background:var(--green);border-color:var(--green);color:#fff}
+.progress{height:6px;background:var(--soft);border-radius:3px;overflow:hidden} .progress i{display:block;height:100%;background:var(--accent)}
+.code{font:13px/1.5 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;white-space:pre}
+.policy{white-space:pre-wrap;font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:14px}
+.edit-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;border-top:1px solid var(--line);padding-top:12px} .edit-row:first-child{border-top:0;padding-top:0}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px} @media (max-width:640px){.grid3{grid-template-columns:minmax(0,1fr)}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:6px;z-index:50;max-width:90vw}
+.err{color:var(--red);font-size:14px;min-height:20px}
+/* overview, boards */
+.chart{width:100%;height:auto;display:block} .chart text{fill:var(--muted);font:11px var(--mono)} .chart .grid{stroke:var(--line);stroke-width:1}
+.s-q{fill:var(--accent)} .s-v{fill:var(--amber)} .s-p{fill:var(--green)} .s-h{fill:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)} .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.need{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)} .need:first-child{border-top:0}
+.need.hot b{color:var(--red)}
+.kan{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;align-items:start}
+.kcol{display:flex;flex-direction:column;gap:10px;min-width:0} .kcol>h3{font-size:15px;display:flex;justify-content:space-between;align-items:center}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0;overflow-wrap:anywhere}
+.kcard select,.kcard input[type=text]{padding:6px 8px;font-size:13px}
+.tags{display:flex;gap:5px;flex-wrap:wrap}
+.task{display:flex;flex-direction:row;gap:8px;align-items:flex-start;font-size:13.5px;font-weight:400} .task input{margin-top:3px} .task.done span{text-decoration:line-through;color:var(--muted)}
+.empty{border:1px dashed var(--line);border-radius:8px;padding:22px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:8px;align-items:center}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px} @media (max-width:760px){.grid4{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+.togs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px 18px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const ORIGIN=location.origin;
+let TOKEN=null,ST=null,AI=false,AIS=[],VIEW="overview",BUSY={},SURE=null,draft={sermon:""};
+try{TOKEN=sessionStorage.getItem("pl-token");draft.sermon=sessionStorage.getItem("pl-sermon")||"";}catch(e){}
+
+const MARK=`<svg width="40" height="62" viewBox="0 0 40 62" aria-hidden="true"><line x1="20" y1="0" x2="20" y2="4" stroke="currentColor" stroke-width="2"/><g class="sway"><line x1="20" y1="3" x2="20" y2="46" stroke="currentColor" stroke-width="1.6"/><path d="M20 62 L12 47 L28 47 Z" fill="currentColor"/></g></svg>`;
+function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3500);}
+async function api(path,method,body){
+  const r=await fetch("/api/admin/"+path,{method:method||"GET",headers:{"content-type":"application/json",...(TOKEN?{authorization:"Bearer "+TOKEN}:{})},body:body?JSON.stringify(body):undefined});
+  const j=await r.json().catch(()=>({}));
+  if(r.status===401&&TOKEN){signOut();throw new Error(j.error||"Please sign in again.");}
+  if(!r.ok)throw new Error(j.error||"Something went wrong.");return j;}
+function setToken(t){TOKEN=t;try{t?sessionStorage.setItem("pl-token",t):sessionStorage.removeItem("pl-token");}catch(e){}}
+function signOut(){setToken(null);ST=null;go();}
+async function refresh(){const j=await api("state");ST=j.church;AI=j.aiLive;AIS=j.aiStatus||[];}
+
+function plumb(score){const a=clamp(100-score,0,60)*0.3,cls=score>=85?"true":score>=65?"lean":"off",lbl=score>=85?"True":score>=65?"Leaning":"Off";
+  return `<span class="plumb ${cls}" title="How closely this draft stays true to the source and your doctrine"><svg width="18" height="34" viewBox="0 0 18 34" aria-hidden="true"><line x1="9" y1="0" x2="9" y2="3" stroke="currentColor" stroke-width="1.4" opacity=".5"/><g transform="rotate(${a} 9 2)"><line x1="9" y1="2" x2="9" y2="25" stroke="currentColor" stroke-width="1.4"/><path d="M9 33 L5 25 L13 25 Z" fill="currentColor"/></g></svg><span><b>${lbl}</b><i>${score}/100</i></span></span>`;}
+const ago=iso=>{const m=Math.round((Date.now()-new Date(iso))/60000);return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago";};
+
+/* ---------- auth screen ---------- */
+function authView(){
+  $("#root").innerHTML=`<div class="auth">
+  <div class="hero">${MARK}<div><h1>Plumb Line</h1><p>An AI helper for your church that stays true to your doctrine, protects people's privacy and never acts without a pastor's approval. Put it on your website with one line of code.</p></div></div>
+  <div class="flow">
+    <div><span class="label">Visitors</span><b>Ask the questions they were afraid to ask</b><span class="muted">Answers come only from what you confirm.</span></div>
+    <div><span class="label">Members</span><b>Weekly reading plan, prayer, a blessing when they move</b><span class="muted">Every note is approved by a person.</span></div>
+    <div><span class="label">Pastors</span><b>One review queue and an AI log</b><span class="muted">See what AI drafted and decide what goes out.</span></div>
+  </div>
+  <div class="two">
+    <form class="panel" id="signup"><h3>Set up your church</h3><p class="muted">Takes two minutes. No credit card.</p>
+      <label>Church name<input type="text" id="s-name" required maxlength="80" autocomplete="organization"></label>
+      <label>Passcode (at least 8 characters)<input type="password" id="s-pass" required minlength="8" autocomplete="new-password"></label>
+      <div class="err" id="s-err" role="alert"></div><div class="row"><button class="btn" id="s-btn">Create my church</button></div></form>
+    <form class="panel" id="login"><h3>Sign in</h3><p class="muted">Use the church ID shown in the sidebar after setup.</p>
+      <label>Church ID<input type="text" id="l-id" required autocomplete="username"></label>
+      <label>Passcode<input type="password" id="l-pass" required autocomplete="current-password"></label>
+      <div class="err" id="l-err" role="alert"></div><div class="row"><button class="btn ghost" id="l-btn">Sign in</button></div></form>
+  </div></div>`;
+  $("#signup").onsubmit=async e=>{e.preventDefault();$("#s-btn").disabled=true;try{const j=await api("signup","POST",{name:$("#s-name").value,pass:$("#s-pass").value});setToken(j.token);await refresh();VIEW="start";go();}catch(er){$("#s-err").textContent=er.message;$("#s-btn").disabled=false;}};
+  $("#login").onsubmit=async e=>{e.preventDefault();$("#l-btn").disabled=true;try{const j=await api("login","POST",{id:$("#l-id").value,pass:$("#l-pass").value});setToken(j.token);await refresh();VIEW="overview";go();}catch(er){$("#l-err").textContent=er.message;$("#l-btn").disabled=false;}};
+}
+
+/* ---------- app shell ---------- */
+const NAV=[["Daily",[["overview","Overview"],["queue","Review queue"],["sermon","Sermon to week"]]],
+ ["People",[["visitors","Visitors"],["care","Care board"],["insight","What people carry"]]],
+ ["Set up",[["start","Get started"],["church","Church & features"],["doctrine","Doctrine & rules"],["faq","Guide answers"],["groups","Small groups"],["partners","Partner churches"]]],
+ ["Publish",[["install","Install on your website"],["policy","AI use policy"],["log","AI log"],["engine","AI engine"]]]];
+const badge=k=>{const n=k==="queue"?ST.queue.filter(q=>q.status==="pending").length:k==="visitors"?ST.visitors.filter(v=>v.status==="new").length:k==="care"?ST.care.filter(x=>x.status==="new").length:0;return n?`<span class="count">${n}</span>`:"";};
+function shell(inner){
+  const pend=ST.queue.filter(q=>q.status==="pending").length;
+  $("#root").innerHTML=`<div class="app"><aside>
+   <div class="logo">${MARK.replace('width="40" height="62"','width="26" height="40"')}<b>Plumb Line</b></div>
+   <div class="who"><b>${esc(ST.name)}</b><span class="muted mono" style="font-size:12px">ID: ${esc(ST.id)}</span><span>${AI?'<span class="pill live">AI connected</span>':'<span class="pill wait">Offline mode</span>'}</span></div>
+   <nav aria-label="Sections">${NAV.map(([g,items])=>`<div class="grp">${g}</div>`+items.map(([k,l])=>`<button type="button" data-v="${k}" ${VIEW===k?'aria-current="page"':""}>${l}${badge(k)}</button>`).join("")).join("")}</nav>
+   <div style="margin-top:auto;padding:0 8px"><button class="btn ghost sm" id="out">Sign out</button></div></aside>
+   <main class="content">${AI?"":`<div class="banner">No AI provider is set up on this server, so drafts use simple rule-based output. Add a free key (for example Groq) to turn AI on. Everything else works.</div>`}${inner}</main></div>`;
+  document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{VIEW=b.dataset.v;go();window.scrollTo(0,0);});
+  $("#out").onclick=signOut;
+}
+const intro=(h,p)=>`<div class="intro"><h2>${h}</h2><p class="muted">${p}</p></div>`;
+
+/* ---------- views ---------- */
+function reviewCard(q,controls){
+  let body="";
+  if(q.type==="sermon"){const P=q.payload.paragraphs||[];
+    body=q.payload.days.map(d=>`<div class="day"><div class="d">DAY ${d.day}</div><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div><span class="ref">${esc(d.passage)}</span> <b>${esc(d.theme)}</b></div><p>${esc(d.question)}</p><p class="muted">Try: ${esc(d.action)}</p><details><summary>${d.source.length?"Rests on "+d.source.map(n=>"paragraph "+n).join(", "):"Cites no sermon paragraph"}</summary>${d.source.map(n=>`<blockquote>${esc((P[n-1]||"").slice(0,240))}…</blockquote>`).join("")}</details></div></div>`).join("");
+  }else if(q.status==="pending"&&q.type!=="urgent")body=`<label>Edit before approving<textarea data-edit="${q.id}" rows="7">${esc(q.body)}</textarea></label>`;
+  else body=`<p style="white-space:pre-wrap">${esc(q.body)}</p>`;
+  if(q.type==="followup"){const v=ST.visitors.find(x=>x.id===(q.meta||{}).visitor);body=`<div class="muted" style="font-size:13px">${v?`To: <b>${esc(v.contact)}</b> · wants to hear from us: ${v.pace==="now"?"this week":"after the second visit"}`:"This visitor's details were erased."}<br>Plumb Line never sends this for you. Copy it and send it from your own email or phone.</div>`+body;}
+  const pill=q.status==="approved"?'<span class="pill ok">Approved</span>':q.status==="rejected"?'<span class="pill no">Rejected</span>':'<span class="pill wait">Needs your review</span>';
+  return `<article class="card"><header><div class="meta"><div class="row"><span class="label">${esc(q.agent)}</span>${pill}<span class="muted" style="font-size:12px">${ago(q.at)}${q.live?"":" · fallback draft"}</span></div><h3>${esc(q.title)}</h3></div>${q.urgent?"":plumb(q.score)}</header><div class="body">${(q.flags||[]).map(f=>`<div class="flag ${q.urgent?"red":""}">${esc(f)}</div>`).join("")}${body}</div>${q.status==="approved"&&["letter","followup","checkin"].includes(q.type)?`<footer><button class="btn ghost sm" data-copyq="${q.id}">Copy message</button></footer>`:""}${q.status==="pending"&&controls!==false?`<footer><button class="btn" data-act="approve" data-id="${q.id}">${q.type==="urgent"?"I have reached out":"Approve"}</button>${q.type==="urgent"?"":`<button class="btn warn" data-act="reject" data-id="${q.id}">Reject</button>`}</footer>`:""}</article>`;}
+function checklist(){
+  const c=ST;
+  const items=[
+   ["Add your pastor's name and a way to reach a person",c.pastor!=="Pastor"&&!!c.contact,"church","Open"],
+   ["Replace the sample guide answers with your own",!c.faq.some(f=>/Edit this answer/.test(f.a)),"faq","Open"],
+   ["Install the widget on your website",c.stats.questions+c.stats.prayers+c.stats.moves+c.stats.visits>0,"install","Open"],
+   ["Publish your first reading plan from a sermon",!!c.published,"sermon","Open"],
+   ["Add your small groups so visitors can find one",c.groups.length>0,"groups","Open"],
+   ["Get urgent care alerts pushed to your phone (Slack, Discord or Zapier)",!!c.alertWebhook,"church","Open"],
+   ["Add a partner church (optional)",c.partners.length>0,"partners","Open"]];
+  const done=items.filter(i=>i[1]).length;
+  return `<section class="panel"><div class="row" style="justify-content:space-between"><h3>Your setup</h3><span class="mono muted">${done} of ${items.length}</span></div><div class="progress"><i style="width:${done/items.length*100}%"></i></div><div class="check-list">${items.map(i=>`<div class="step"><span class="dot ${i[1]?"done":""}">${i[1]?"✓":""}</span><span>${esc(i[0])}</span><button class="btn ghost sm" data-go="${i[2]}">${i[3]}</button></div>`).join("")}</div></section>`;}
+const VIEWS={
+ start:()=>intro("Welcome, "+esc(ST.pastor==="Pastor"?"pastor":ST.pastor),"Plumb Line gives your church a helper that answers visitors, shares your weekly reading plan, receives prayer requests and writes letters of commendation. It drafts. You decide.")+checklist(),
+
+ overview:()=>{
+  const c=ST,days=[];for(let i=13;i>=0;i--){const d=new Date(Date.now()-i*864e5).toISOString().slice(0,10);days.push({d,...{q:0,v:0,p:0,h:0},...(c.daily[d]||{})});}
+  const tot=k=>days.reduce((a,x)=>a+(x[k]||0),0),sum=x=>x.q+x.v+x.p+x.h,mx=Math.max(1,...days.map(sum));
+  const nice=mx<=4?4:mx<=10?10:Math.ceil(mx/10)*10,W=640,H=170,L=34,B=22,bw=(W-L-6)/days.length;
+  const bars=days.map((x,i)=>{let y=H-B;const X=L+i*bw+bw*.16;return ["h","p","v","q"].map(k=>{const h=(x[k]||0)/nice*(H-B-8);y-=h;return h>0?`<rect class="s-${k}" x="${X.toFixed(1)}" y="${y.toFixed(1)}" width="${(bw*.68).toFixed(1)}" height="${h.toFixed(1)}"><title>${x.d}: ${x[k]}</title></rect>`:"";}).join("");}).join("");
+  const grid=[0,.5,1].map(f=>{const y=H-B-f*(H-B-8);return `<line class="grid" x1="${L}" x2="${W}" y1="${y}" y2="${y}"/><text x="${L-6}" y="${y+4}" text-anchor="end">${Math.round(nice*f)}</text>`;}).join("");
+  const lab=days.map((x,i)=>i%3===0?`<text x="${(L+i*bw+bw/2).toFixed(1)}" y="${H-5}" text-anchor="middle">${new Date(x.d+"T12:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short"})}</text>`:"").join("");
+  const quiet=days.every(x=>!sum(x));
+  const pend=c.queue.filter(q=>q.status==="pending"),urg=pend.filter(q=>q.urgent).length,nv=c.visitors.filter(v=>v.status==="new").length,nc=c.care.filter(x=>x.status==="new").length,gaps=c.friction.length;
+  const need=[[urg,"urgent care alert"+(urg===1?"":"s"),"queue",true],[pend.length-urg,"draft"+(pend.length-urg===1?"":"s")+" waiting for your approval","queue"],[nv,"new visitor"+(nv===1?"":"s")+" to welcome","visitors"],[nc,"new care request"+(nc===1?"":"s"),"care"],[gaps,"question"+(gaps===1?"":"s")+" the guide could not answer","insight"]].filter(x=>x[0]>0);
+  return intro("Overview","What happened across your website and congregation in the last 14 days, and what needs you.")+
+  `<div class="stats"><div class="stat"><b>${tot("q")}</b><span class="muted">questions asked</span></div><div class="stat"><b>${tot("v")}</b><span class="muted">first-time visitors</span></div><div class="stat"><b>${tot("p")}</b><span class="muted">prayer requests</span></div><div class="stat"><b>${tot("h")}</b><span class="muted">help requests</span></div></div>
+  <div class="two"><section class="panel"><h3>Needs you</h3>${need.length?need.map(n=>`<div class="need ${n[3]?"hot":""}"><span><b>${n[0]}</b> ${n[1]}</span><button class="btn ${n[3]?"":"ghost"} sm" data-go="${n[2]}">Open</button></div>`).join(""):`<p class="muted">You are caught up. Nothing is waiting.</p>`}</section>
+  <section class="panel"><h3>Top unanswered questions</h3>${c.friction.length?`<div class="scroll"><table><tbody>${c.friction.slice(0,5).map((f,i)=>`<tr><td>${esc(f.q)}</td><td class="mono">${f.n}×</td><td><button class="btn ghost sm" data-addfaq="${i}">Add answer</button></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">When a visitor asks something your guide cannot answer, it shows up here so you can fix it.</p>`}</section></div>
+  <section class="panel"><h3>Activity</h3><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily activity for the last 14 days">${grid}${bars}${lab}</svg>
+   <div class="legend"><span><i class="s-q" style="background:var(--accent)"></i>Questions</span><span><i style="background:var(--amber)"></i>First-time visitors</span><span><i style="background:var(--green)"></i>Prayer</span><span><i style="background:var(--muted)"></i>Help requests</span></div>
+   ${quiet?`<p class="muted">No activity yet. Once the widget is on your website, daily counts appear here. Only numbers are kept, never what people wrote.</p>`:""}</section>`;},
+ visitors:()=>{
+  const cols=[["new","New"],["contacted","Contacted"],["returned","Returned"],["connected","Connected"]],vs=ST.visitors,nope=vs.filter(v=>v.status==="closed");
+  const card=v=>{const q=ST.queue.find(x=>x.meta&&x.meta.visitor===v.id),fu=q?(q.status==="pending"?'<span class="pill wait">Draft waiting</span>':q.status==="approved"?'<span class="pill ok">Follow-up approved</span>':'<span class="pill no">Draft rejected</span>'):"";
+   return `<article class="kcard"><div class="row" style="justify-content:space-between"><b>${esc(v.name||"Visitor")}</b><span class="muted" style="font-size:12px">${ago(v.at)}</span></div>
+   <div class="tags">${v.interests.map(i=>`<span class="pill">${esc(i)}</span>`).join("")}${v.kids?`<span class="pill">kids: ${esc(v.kids)}</span>`:""}</div>
+   ${v.group?`<span class="muted" style="font-size:13px">Suggested group: ${esc(v.group)}</span>`:""}
+   <div class="row"><span style="font-size:13px">${esc(v.contact)}</span><button class="btn ghost sm" data-copy="${esc(v.contact)}">Copy</button></div>
+   <div class="row"><span class="pill">${v.pace==="now"?"contact this week":v.pace==="none"?"no contact":"after 2nd visit"}</span>${fu}${q&&q.status==="pending"?`<button class="btn ghost sm" data-go="queue">Review</button>`:""}</div>
+   <select data-vstatus="${v.id}" aria-label="Status">${[...cols,["closed","No contact wanted"]].map(([k,l])=>`<option value="${k}" ${v.status===k?"selected":""}>${l}</option>`).join("")}</select>
+   <button class="btn warn sm" data-verase="${v.id}">${SURE===v.id?"Confirm: erase everything":"Erase this person"}</button></article>`;};
+  return intro("Visitors","People who left their details through the widget, with their consent. You decide who contacts them and when. Nothing is sent automatically.")+
+  (vs.length?`<div class="kan">${cols.map(([k,l])=>{const list=vs.filter(v=>v.status===k);return `<div class="kcol"><h3>${l}<span class="pill">${list.length}</span></h3>${list.map(card).join("")||`<span class="muted" style="font-size:13px">None</span>`}</div>`;}).join("")}</div>`+(nope.length?`<details><summary>${nope.length} asked for no contact</summary><div class="kan" style="margin-top:12px">${nope.map(card).join("")}</div></details>`:""):
+  `<div class="empty"><b>No visitors yet</b><span>Visitors appear when someone uses the "New here?" tab and chooses to leave contact details. People who prefer to stay anonymous still get their answers, and are only counted.</span><button class="btn" data-go="install">Install the widget</button></div>`);},
+ care:()=>{
+  const cols=[["new","New"],["inprogress","In progress"],["done","Done"]],list=ST.care,kinds={meal:"Meal",ride:"Ride",visit:"Visit or call",errand:"Errand",other:"Other"};
+  const card=x=>`<article class="kcard"><div class="row" style="justify-content:space-between"><span class="pill">${kinds[x.kind]||"Other"}</span><span class="muted" style="font-size:12px">${ago(x.at)}</span></div>
+   <p style="font-size:14px">${esc(x.text)}</p><div class="row"><span style="font-size:13px"><b>${esc(x.name||"Member")}</b> · ${esc(x.contact)}</span><button class="btn ghost sm" data-copy="${esc(x.contact)}">Copy</button></div>
+   <div style="display:flex;flex-direction:column;gap:5px"><span class="label">Suggested steps</span>${x.tasks.map((t,i)=>`<label class="task ${t.done?"done":""}"><input type="checkbox" data-ctask="${x.id}" data-i="${i}" ${t.done?"checked":""}><span>${esc(t.t)}</span></label>`).join("")}</div>
+   <input type="text" data-cassign="${x.id}" value="${esc(x.assignee)}" placeholder="Who is helping?" maxlength="60" aria-label="Assigned to">
+   <select data-cstatus="${x.id}" aria-label="Status">${cols.map(([k,l])=>`<option value="${k}" ${x.status===k?"selected":""}>${l}</option>`).join("")}</select>
+   <button class="btn warn sm" data-cerase="${x.id}">${SURE===x.id?"Confirm: erase request":"Erase request"}</button></article>`;
+  return intro("Care board","Practical help members asked for: meals, rides, visits. A person on your team decides who helps. AI only suggests steps and never reads pastoral notes.")+
+  (list.length?`<div class="kan">${cols.map(([k,l])=>{const l2=list.filter(x=>x.status===k);return `<div class="kcol"><h3>${l}<span class="pill">${l2.length}</span></h3>${l2.map(card).join("")||`<span class="muted" style="font-size:13px">None</span>`}</div>`;}).join("")}</div>`:
+  `<div class="empty"><b>No requests yet</b><span>Members ask through the "Help" tab. Each request becomes a card with suggested steps. Turn on an alert address in Church &amp; features to be pushed a message when one arrives.</span><button class="btn ghost" data-go="church">Set up alerts</button></div>`);},
+ groups:()=>intro("Small groups","List your groups. Visitors describe what they want in their own words and the widget suggests groups from this list. Only open groups are shown.")+
+  `<form class="panel" id="f-groups">${ST.groups.length?ST.groups.map((g,i)=>`<div class="edit-row" data-i="${i}"><div style="display:flex;flex-direction:column;gap:8px"><div class="grid3"><input type="text" data-n placeholder="Group name" value="${esc(g.name)}" maxlength="80"><input type="text" data-d placeholder="Day, e.g. Thursday" value="${esc(g.day)}" maxlength="30"><input type="text" data-t placeholder="Time, e.g. 7:00 PM" value="${esc(g.time)}" maxlength="30"></div>
+   <div class="grid3"><input type="text" data-a placeholder="Area or neighborhood" value="${esc(g.area)}" maxlength="60"><input type="text" data-s placeholder="Who it is for, e.g. young families" value="${esc(g.stage)}" maxlength="60"><input type="text" data-o placeholder="Topic, e.g. Bible study" value="${esc(g.topic)}" maxlength="60"></div>
+   <textarea data-e placeholder="One or two sentences about what happens" maxlength="240" style="min-height:60px">${esc(g.desc)}</textarea><label class="check"><input type="checkbox" data-k ${g.open?"checked":""}>Open to new people</label></div><button type="button" class="btn warn sm" data-delgrp="${i}">Remove</button></div>`).join(""):`<p class="muted">No groups yet. Add the groups that meet at your church. Do not list member names or home addresses.</p>`}
+  <div class="row"><button type="button" class="btn ghost" id="addgrp">Add a group</button><button class="btn">Save groups</button></div></form>`,
+ engine:()=>intro("AI engine","Plumb Line tries these providers in order. If one is busy, down or returns something unusable, the next one answers. If all fail, a simple rule-based draft is used, so the widget never goes silent.")+
+  `<section class="panel"><div class="row" style="justify-content:space-between"><h3>Providers</h3><button class="btn" id="aitest" ${BUSY.aitest?"disabled":""}>${BUSY.aitest?"Testing…":"Test connections"}</button></div>
+  ${AIS.length?`<div class="scroll"><table><thead><tr><th>Order</th><th>Provider</th><th>Model</th><th>Private text</th><th>Status</th><th>Answered</th><th>Failed</th></tr></thead><tbody>${AIS.map((p,i)=>`<tr><td class="mono">${i+1}</td><td><b>${esc(p.name)}</b></td><td class="mono" style="font-size:12px">${esc(p.quick)}<br>${esc(p.default)}</td><td>${p.privateOk?'<span class="pill ok">allowed</span>':'<span class="pill wait">blocked</span>'}</td><td>${p.state==="ready"?'<span class="pill ok">ready</span>':'<span class="pill wait">'+esc(p.state)+(p.coolSeconds?" "+p.coolSeconds+"s":"")+'</span>'}${p.last?`<div class="muted" style="font-size:12px">last problem: ${esc(p.last)}</div>`:""}</td><td class="mono">${p.ok}</td><td class="mono">${p.fail}</td></tr>`).join("")}</tbody></table></div>
+  ${BUSY.aires?`<div class="check-list">${BUSY.aires.map(r=>`<div class="step"><span class="dot ${r.ok?"done":""}">${r.ok?"✓":"!"}</span><span><b>${esc(r.name)}</b> <span class="muted mono" style="font-size:12px">${esc(r.model)}</span></span><span class="mono">${r.ok?r.ms+" ms":esc(r.error)}</span></div>`).join("")}</div>`:""}`:
+  `<div class="empty"><b>No provider configured</b><span>Set at least one key on the server, for example <span class="mono">GROQ_API_KEY</span>, then restart. See the README for the full list.</span></div>`}</section>
+  <section class="panel"><h3>Private text stays on private providers</h3><p class="muted">Prayer requests, care requests, visitor questions and member names are only sent to providers marked <b>allowed</b>. Some free tiers may use prompts to improve their products, so those are blocked for private text and used only for public content such as the pastor's own sermon. The server owner can change this per provider.</p></section>`,
+ queue:()=>{const p=ST.queue.filter(q=>q.status==="pending"),d=ST.queue.filter(q=>q.status!=="pending").slice(0,10);
+   return intro("Review queue","Nothing reaches your people until you approve it. Each card shows how closely the draft stays true to its source and your doctrine.")+
+   (p.length?p.map(q=>reviewCard(q)).join(""):`<div class="panel" style="border-style:dashed;text-align:center;align-items:center"><p>Nothing is waiting for you.</p><p class="muted">Drafts appear when visitors, members or you start using the widget.</p><button class="btn" data-go="sermon">Draft a reading plan</button></div>`)+
+   (d.length?`<h3>Decided</h3>`+d.map(q=>reviewCard(q,false)).join(""):"");},
+ sermon:()=>intro("Sermon to week","Paste your sermon. The agent builds a five-day journey and shows which of your paragraphs each day rests on, so you can see where it drifted.")+
+  `<div class="panel"><label>Your sermon, one paragraph per block<textarea id="sermon" rows="14" style="min-height:300px" placeholder="Paste or type your sermon here.">${esc(draft.sermon)}</textarea></label>
+   <div class="row"><button class="btn" id="gen" ${BUSY.sermon?"disabled":""}>${BUSY.sermon?"Drafting…":"Draft the five days"}</button><span class="muted">Scripture is given as references only. The draft goes to your review queue.</span></div></div>`,
+ insight:()=>{const c=ST,themes=["Health","Family","Work & provision","Grief","Faith & doubt","Guidance","Thanksgiving","Other"],max=Math.max(1,...themes.map(t=>c.themeCounts[t]||0));
+  return intro("What people carry","Anonymous themes from prayer requests and the questions visitors could not get answered. No names. Prayer text is never stored.")+
+  `<div class="stats"><div class="stat"><b>${c.stats.questions}</b><span class="muted">visitor questions</span></div><div class="stat"><b>${c.stats.unanswered}</b><span class="muted">not answered</span></div><div class="stat"><b>${c.stats.prayers}</b><span class="muted">prayer requests</span></div><div class="stat"><b>${c.stats.moves}</b><span class="muted">move requests</span></div><div class="stat"><b>${c.stats.visits}</b><span class="muted">first-time visitors</span></div><div class="stat"><b>${c.stats.care}</b><span class="muted">help requests</span></div><div class="stat"><b>${c.stats.groups}</b><span class="muted">group searches</span></div><div class="stat"><b>${c.stats.crisis}</b><span class="muted">urgent care alerts</span></div></div>
+  <div class="two"><div class="panel"><span class="label">Prayer themes</span>${c.stats.prayers?`<div class="bars">${themes.map(t=>`<div class="bar"><span>${esc(t)}</span><div class="t"><i style="width:${Math.round((c.themeCounts[t]||0)/max*100)}%"></i></div><span class="n">${c.themeCounts[t]||0}</span></div>`).join("")}</div>`:`<p class="muted">Themes appear after the first prayer request.</p>`}</div>
+  <div class="panel"><span class="label">Questions the guide could not answer</span>${c.friction.length?`<div class="scroll"><table><thead><tr><th>Question</th><th>Times</th><th></th></tr></thead><tbody>${c.friction.slice(0,15).map((f,i)=>`<tr><td>${esc(f.q)}</td><td class="mono">${f.n}</td><td><div class="row"><button class="btn ghost sm" data-addfaq="${i}">Add answer</button><button class="btn ghost sm" data-dismiss="${i}">Dismiss</button></div></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">Gaps appear here when visitors ask something your guide answers do not cover.</p>`}</div></div>`;},
+ church:()=>intro("Church & features","How the widget looks, what it offers, and how you are alerted.")+
+  `<form class="panel" id="f-church"><label>Church name<input type="text" id="c-name" value="${esc(ST.name)}" maxlength="80"></label><label>Pastor's name (shown to members)<input type="text" id="c-pastor" value="${esc(ST.pastor)}" maxlength="60"></label>
+  <label>How can a visitor reach a person?<input type="text" id="c-contact" value="${esc(ST.contact||"")}" maxlength="240" placeholder="Call 555-0100 or email office@yourchurch.org"></label>
+  <label>Widget color<div class="row"><input type="color" id="c-color" value="${esc(ST.color)}"><span class="muted">Text color adjusts automatically.</span></div></label>
+  <span class="label">Tabs in your widget</span><div class="togs">${[["guide","Ask: answers from your guide"],["visit","New here?: first-time visitors"],["groups","Groups: find a small group"],["week","This week: reading plan"],["prayer","Prayer requests"],["care","Help: meals, rides, visits"],["moving","Moving?: letters to partner churches"]].map(([k,l])=>`<label class="check"><input type="checkbox" data-feat="${k}" ${ST.features[k]?"checked":""}>${l}</label>`).join("")}</div>
+  <p class="muted">Groups only appears once you add an open group. Moving? only appears once you add a partner church.</p>
+  <label>Urgent alert address (optional)<input type="text" id="c-alert" value="${esc(ST.alertWebhook||"")}" placeholder="https://hooks.slack.com/services/..." maxlength="300"></label>
+  <p class="muted">Paste a Slack, Discord or Zapier incoming-webhook address. When someone's words trigger the safety rule, or a care request arrives, a short message with no private details is sent there so you hear immediately instead of when you next open this page.</p>
+  <div class="row"><button class="btn">Save</button><button type="button" class="btn ghost" id="alerttest">Send a test alert</button></div></form>`,
+ doctrine:()=>{const r=ST.rules,cb=(k,l)=>`<label class="check"><input type="checkbox" data-rule="${k}" ${r[k]?"checked":""}>${l}</label>`;
+  return intro("Doctrine & rules","Every agent reads your statement of faith before it writes. These rules also become your AI use policy.")+
+  `<form class="panel" id="f-doc"><label>Statement of faith<textarea id="d-doc" rows="9" style="min-height:220px">${esc(ST.doctrine)}</textarea></label>
+  ${cb("noQuote","Scripture as references only. A person quotes the text from a licensed translation.")}${cb("noPromise","Never promise healing, outcomes or private revelation.")}${cb("crisis","Language about harm or abuse alerts you by a fixed rule, never by AI.")}${cb("disclose","Log AI use and tell people when they ask.")}<div class="row"><button class="btn">Save</button></div></form>`;},
+ faq:()=>intro("Guide answers","The visitor guide answers only from this list. Write what is true for your church. If a question is not covered, the guide says so and offers a person.")+
+  `<form class="panel" id="f-faq">${ST.faq.map((f,i)=>`<div class="edit-row" data-i="${i}"><div style="display:flex;flex-direction:column;gap:8px"><input type="text" data-q value="${esc(f.q)}" aria-label="Question" maxlength="120"><textarea data-a aria-label="Answer" maxlength="700" style="min-height:70px">${esc(f.a)}</textarea></div><button type="button" class="btn warn sm" data-delfaq="${i}">Remove</button></div>`).join("")}
+  <div class="row"><button type="button" class="btn ghost" id="addfaq">Add a question</button><button class="btn">Save answers</button></div></form>`,
+ partners:()=>intro("Partner churches","Churches you trust. When a member moves to one of their cities, you can send a letter of commendation. Add real churches you know and have asked.")+
+  `<form class="panel" id="f-par">${ST.partners.length?ST.partners.map((p,i)=>`<div class="edit-row" data-i="${i}"><div style="display:flex;flex-direction:column;gap:8px"><div class="grid3"><input type="text" data-n placeholder="Church name" value="${esc(p.name)}" maxlength="80"><input type="text" data-c placeholder="City, Region" value="${esc(p.city)}" maxlength="80"><input type="text" data-l placeholder="Languages, comma separated" value="${esc(p.langs.join(", "))}"></div>
+   <div class="row"><select data-s style="width:auto">${["Contemporary","Blended","Traditional"].map(s=>`<option ${p.style===s?"selected":""}>${s}</option>`).join("")}</select><label class="check"><input type="checkbox" data-k ${p.kids?"checked":""}>Has children's ministry</label></div></div><button type="button" class="btn warn sm" data-delpar="${i}">Remove</button></div>`).join(""):`<p class="muted">No partner churches yet. Members who are moving will be told no partner is available.</p>`}
+  <div class="row"><button type="button" class="btn ghost" id="addpar">Add a church</button><button class="btn">Save churches</button></div></form>`,
+ install:()=>{const snip=`<script src="${ORIGIN}/widget.js" data-church="${ST.id}" async><\/script>`;
+  return intro("Install on your website","Paste one line into your site. A chat button appears on every page. It runs in its own sealed box, so it cannot break your site's design.")+
+  `<div class="panel"><span class="label">Your code</span><div class="code" id="snip">${esc(snip)}</div><div class="row"><button class="btn" id="copy">Copy code</button><button class="btn ghost" id="try">Try it on this page</button><a href="/demo.html?church=${esc(ST.id)}" target="_blank" rel="noopener">Open a sample church website</a></div></div>
+  <div class="two"><div class="panel"><span class="label">Where to paste it</span>
+   <p><b>WordPress.</b> Install the free "Insert Headers and Footers" plugin and paste into Footer. Or add a Custom HTML block to your footer widget.</p>
+   <p><b>Squarespace.</b> Settings, Advanced, Code Injection, Footer.</p><p><b>Wix.</b> Settings, Custom Code, add to Body end, All pages.</p>
+   <p><b>Webflow.</b> Site settings, Custom code, Footer code.</p><p><b>Plain HTML.</b> Paste before the closing body tag.</p><p class="muted">Church website builders and Planning Center Websites have a similar footer or custom code box.</p></div>
+  <form class="panel" id="f-origin"><span class="label">Lock to your domain</span><p class="muted">Only these websites may use your widget. Leave empty while testing. Include https:// and no trailing slash.</p>
+   <textarea id="origins" rows="4" placeholder="https://www.yourchurch.org">${esc(ST.origins.join("\n"))}</textarea><div class="row"><button class="btn">Save domains</button></div></form></div>`;},
+ policy:()=>intro("AI use policy","Written from your settings. Adopt it, edit it, and share it with your team and congregation.")+`<div class="panel"><div class="policy" id="policy">${esc(policyText())}</div><div class="row"><button class="btn" id="pcopy">Copy</button><button class="btn ghost" id="pdl">Download .txt</button></div></div>`,
+ log:()=>intro("AI log","What AI drafted, which path produced it, and who approved it.")+`<div class="panel"><div class="row"><button class="btn ghost sm" id="csv" ${ST.log.length?"":"disabled"}>Export CSV</button></div><div class="scroll"><table><thead><tr><th>When</th><th>Agent</th><th>What</th><th>Source</th><th>Human decision</th></tr></thead><tbody>${ST.log.length?ST.log.slice(0,100).map(l=>`<tr><td class="mono">${ago(l.at)}</td><td>${esc(l.agent)}</td><td>${esc(l.what)}</td><td class="mono">${esc(l.mode)}</td><td>${esc(l.decision)}</td></tr>`).join(""):`<tr><td colspan="5" class="muted">Nothing yet.</td></tr>`}</tbody></table></div></div>`
+};
+function policyText(){const c=ST,r=c.rules;
+ return `AI USE POLICY — ${c.name}\n\n1. Purpose. We use AI to free staff and volunteers for people, never to replace pastoral care, prayer or preaching.\n2. Human review. ${r.disclose?"Every AI draft that reaches the congregation is reviewed and approved by a named person. ":""}AI does not send messages, move money or change records on its own.\n3. Doctrine. AI output must stay inside our statement of faith. Doctrinal questions go to ${c.pastor}.\n4. Scripture. ${r.noQuote?"AI gives references only. Scripture text is quoted from a licensed translation by a person.":"Scripture quoted by AI must be checked against a licensed translation."}\n5. Promises. ${r.noPromise?"AI never promises healing, outcomes or private revelation.":"Any promise-like language is reviewed by a pastor."}\n6. Care and safety. ${r.crisis?"Language about harm or abuse triggers a fixed rule that alerts a pastor immediately. Automated replies are never the response.":"Pastoral concerns are handled by a person."}\n7. Privacy. Donor identities, pastoral notes and private prayer text are never sent to AI tools or stored by this system. Visitor questions the guide cannot answer are kept without names, emails or phone numbers so we can improve our answers.\n8. Honesty. ${r.disclose?"We keep a log of what AI drafted and who approved it, and we say so when asked.":"We tell people when they are talking to an AI."}`;}
+
+/* ---------- actions ---------- */
+async function save(patch,msg){try{const j=await api("settings","PUT",patch);ST=j.church;toast(msg||"Saved.");go();}catch(e){toast(e.message);}}
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove();}
+function copy(text,fallbackEl){(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(text):Promise.reject()).then(()=>toast("Copied."),()=>{if(fallbackEl){const r=document.createRange();r.selectNodeContents(fallbackEl);const s=getSelection();s.removeAllRanges();s.addRange(r);}toast("Select and copy the highlighted text.");});}
+function bind(){
+  const main=$(".content");
+  main.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{VIEW=b.dataset.go;go();window.scrollTo(0,0);});
+  main.querySelectorAll("[data-act]").forEach(b=>b.onclick=async()=>{b.disabled=true;try{await api("queue/"+b.dataset.id+"/"+b.dataset.act,"POST");await refresh();toast(b.dataset.act==="approve"?"Approved and logged.":"Rejected and logged.");go();}catch(e){toast(e.message);b.disabled=false;}});
+  main.querySelectorAll("[data-edit]").forEach(t=>t.oninput=()=>{clearTimeout(t.h);t.h=setTimeout(()=>api("queue/"+t.dataset.edit,"PATCH",{body:t.value}).catch(()=>{}),500);});
+  const g=id=>$(id);
+  if(g("#sermon"))g("#sermon").oninput=e=>{draft.sermon=e.target.value;try{sessionStorage.setItem("pl-sermon",draft.sermon);}catch(x){}};
+  if(g("#gen"))g("#gen").onclick=async()=>{draft.sermon=g("#sermon").value;BUSY.sermon=true;go();try{await api("sermon","POST",{text:draft.sermon});await refresh();toast("Draft is in your review queue.");VIEW="queue";}catch(e){toast(e.message);}BUSY.sermon=false;go();};
+  if(g("#f-church"))g("#f-church").onsubmit=e=>{e.preventDefault();{const features={};main.querySelectorAll("[data-feat]").forEach(c=>features[c.dataset.feat]=c.checked);save({name:g("#c-name").value,pastor:g("#c-pastor").value,contact:g("#c-contact").value,color:g("#c-color").value,features,alertWebhook:g("#c-alert").value});}};
+  if(g("#alerttest"))g("#alerttest").onclick=async()=>{const b=g("#alerttest");b.disabled=true;try{await api("settings","PUT",{alertWebhook:g("#c-alert").value});await api("alert-test","POST");toast("Test alert sent. Check your Slack, Discord or Zapier.");}catch(e){toast(e.message);}b.disabled=false;};
+  if(g("#f-doc")){main.querySelectorAll("[data-rule]").forEach(c=>c.onchange=()=>{ST.rules[c.dataset.rule]=c.checked;});g("#f-doc").onsubmit=e=>{e.preventDefault();save({doctrine:g("#d-doc").value,rules:ST.rules});};}
+  if(g("#f-faq")){
+    const collect=()=>[...main.querySelectorAll("#f-faq .edit-row")].map(r=>({q:r.querySelector("[data-q]").value,a:r.querySelector("[data-a]").value}));
+    g("#f-faq").onsubmit=e=>{e.preventDefault();save({faq:collect()},"Guide answers saved.");};
+    g("#addfaq").onclick=()=>{ST.faq=collect().concat([{q:"",a:""}]);go();};
+    main.querySelectorAll("[data-delfaq]").forEach(b=>b.onclick=()=>{const a=collect();a.splice(+b.dataset.delfaq,1);ST.faq=a;go();});}
+  if(g("#f-par")){
+    const collect=()=>[...main.querySelectorAll("#f-par .edit-row")].map(r=>({name:r.querySelector("[data-n]").value,city:r.querySelector("[data-c]").value,langs:r.querySelector("[data-l]").value,style:r.querySelector("[data-s]").value,kids:r.querySelector("[data-k]").checked}));
+    g("#f-par").onsubmit=e=>{e.preventDefault();save({partners:collect()},"Partner churches saved.");};
+    g("#addpar").onclick=()=>{ST.partners=collect().map(p=>({...p,langs:p.langs.split(",").map(s=>s.trim()).filter(Boolean)})).concat([{name:"",city:"",langs:["English"],style:"Blended",kids:true}]);go();};
+    main.querySelectorAll("[data-delpar]").forEach(b=>b.onclick=()=>{const a=collect().map(p=>({...p,langs:p.langs.split(",").map(s=>s.trim()).filter(Boolean)}));a.splice(+b.dataset.delpar,1);ST.partners=a;go();});}
+  main.querySelectorAll("[data-addfaq]").forEach(b=>b.onclick=async()=>{const f=ST.friction[+b.dataset.addfaq];VIEW="faq";ST.faq=ST.faq.concat([{id:"new",q:f.q,a:""}]);go();window.scrollTo(0,document.body.scrollHeight);toast("Write the answer, then save.");});
+
+  /* people and boards */
+  const act=async(fn,msg)=>{try{await fn();await refresh();if(msg)toast(msg);go();}catch(e){toast(e.message);}};
+  main.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copy(b.dataset.copy));
+  main.querySelectorAll("[data-copyq]").forEach(b=>b.onclick=()=>{const q=ST.queue.find(x=>x.id===+b.dataset.copyq);if(q)copy(q.body);});
+  main.querySelectorAll("[data-dismiss]").forEach(b=>b.onclick=()=>act(()=>api("friction","POST",{i:+b.dataset.dismiss}),"Dismissed."));
+  main.querySelectorAll("[data-vstatus]").forEach(x=>x.onchange=()=>act(()=>api("visitors/"+x.dataset.vstatus,"PATCH",{status:x.value})));
+  main.querySelectorAll("[data-verase]").forEach(b=>b.onclick=()=>{const id=b.dataset.verase;if(SURE!==id){SURE=id;return go();}SURE=null;act(()=>api("visitors/"+id,"DELETE"),"Erased, including any drafts about this person.");});
+  main.querySelectorAll("[data-cstatus]").forEach(x=>x.onchange=()=>act(()=>api("care/"+x.dataset.cstatus,"PATCH",{status:x.value})));
+  main.querySelectorAll("[data-cassign]").forEach(x=>x.onchange=()=>act(()=>api("care/"+x.dataset.cassign,"PATCH",{assignee:x.value}),"Saved."));
+  main.querySelectorAll("[data-ctask]").forEach(x=>x.onchange=()=>{const c=ST.care.find(k=>k.id===x.dataset.ctask);if(!c)return;const t=c.tasks.map((k,i)=>({t:k.t,done:i===+x.dataset.i?x.checked:k.done}));act(()=>api("care/"+c.id,"PATCH",{tasks:t}));});
+  main.querySelectorAll("[data-cerase]").forEach(b=>b.onclick=()=>{const id=b.dataset.cerase;if(SURE!==id){SURE=id;return go();}SURE=null;act(()=>api("care/"+id,"DELETE"),"Request erased.");});
+  if(g("#f-groups")){
+    const collect=()=>[...main.querySelectorAll("#f-groups .edit-row")].map(r=>({name:r.querySelector("[data-n]").value,day:r.querySelector("[data-d]").value,time:r.querySelector("[data-t]").value,area:r.querySelector("[data-a]").value,stage:r.querySelector("[data-s]").value,topic:r.querySelector("[data-o]").value,desc:r.querySelector("[data-e]").value,open:r.querySelector("[data-k]").checked}));
+    g("#f-groups").onsubmit=e=>{e.preventDefault();save({groups:collect()},"Groups saved.");};
+    g("#addgrp").onclick=()=>{ST.groups=collect().concat([{name:"",day:"",time:"",area:"",stage:"",topic:"",desc:"",open:true}]);go();};
+    main.querySelectorAll("[data-delgrp]").forEach(b=>b.onclick=()=>{const a=collect();a.splice(+b.dataset.delgrp,1);ST.groups=a;go();});}
+  if(g("#aitest"))g("#aitest").onclick=async()=>{BUSY.aitest=true;go();try{const j=await api("ai-test","POST");BUSY.aires=j.results;AIS=j.aiStatus;}catch(e){toast(e.message);}BUSY.aitest=false;go();};
+  if(g("#copy"))g("#copy").onclick=()=>copy(g("#snip").textContent,g("#snip"));
+  if(g("#try"))g("#try").onclick=()=>{if(document.getElementById("pl-preview"))return toast("Widget is already on this page.");const s=document.createElement("script");s.id="pl-preview";s.src="/widget.js";s.async=true;s.setAttribute("data-church",ST.id);document.body.appendChild(s);toast("Look for the button at the bottom right.");};
+  if(g("#f-origin"))g("#f-origin").onsubmit=e=>{e.preventDefault();save({origins:g("#origins").value.split(/\s+/).filter(Boolean)},"Domains saved. Only these sites can use your widget now.");};
+  if(g("#pcopy"))g("#pcopy").onclick=()=>copy(policyText(),g("#policy"));
+  if(g("#pdl"))g("#pdl").onclick=()=>download("ai-use-policy.txt",policyText(),"text/plain");
+  if(g("#csv"))g("#csv").onclick=()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"';download("ai-log.csv",["When,Agent,What,Source,Decision",...ST.log.map(l=>[l.at,l.agent,l.what,l.mode,l.decision].map(q).join(","))].join("\n"),"text/csv");};
+}
+function go(){
+  if(!TOKEN||!ST)return authView();
+  shell((VIEWS[VIEW]||VIEWS.overview)());bind();
+}
+(async function(){
+  if(TOKEN){try{await refresh();}catch(e){setToken(null);}}
+  go();
+})();
+</script>
+</body>
+</html>

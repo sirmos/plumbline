@@ -1,0 +1,9 @@
+{
+  "name": "plumb-line",
+  "version": "0.3.0",
+  "description": "An AI helper any church can add to its website with one line of code. Drafts, never acts: a pastor approves everything.",
+  "private": true,
+  "scripts": { "start": "node server.js", "test": "node test/e2e.js", "test:ai": "node test/router.js" },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED"
+}
