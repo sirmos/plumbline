@@ -6,125 +6,8 @@
 <title>Plumb Line</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Young+Serif&display=swap">
-<style>
-/* Layout: sign-in screen, then a sidebar app. Pastor tools on the left, one working surface on the right. */
-:root{
-  --bg:#E9EEEC; --surface:#F7F9F8; --fg:#14201D; --muted:#52625E; --line:#C9D3D0; --soft:#DDE5E2;
-  --accent:#0E5A58; --accent-fg:#F2FAF9;
-  --amber:#8F5400; --amber-bg:#F6E7C8; --red:#A32A2A; --red-bg:#F6D9D6; --green:#1F6B3A; --green-bg:#D6EBDD;
-  --display:"Young Serif",Georgia,serif; --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace; color-scheme:light}
-@media (prefers-color-scheme: dark){:root{
-  --bg:#0F1816; --surface:#16221F; --fg:#E3ECE9; --muted:#93A6A1; --line:#2A3B37; --soft:#1D2D29;
-  --accent:#5FC3BC; --accent-fg:#082321;
-  --amber:#E5A845; --amber-bg:#3A2E12; --red:#F08A82; --red-bg:#3E1B18; --green:#7FD09A; --green-bg:#153222; color-scheme:dark}}
-*{box-sizing:border-box}
-html,body{margin:0}
-body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body)}
-h1,h2,h3{font-family:var(--display);font-weight:400;text-wrap:balance;margin:0}
-h2{font-size:28px;line-height:1.15} h3{font-size:19px;line-height:1.2}
-p{margin:0} .muted{color:var(--muted)} .mono{font-family:var(--mono)}
-.label{font:500 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-button,input,textarea,select{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-a{color:var(--accent)}
-/* auth */
-.auth{max-width:980px;margin:0 auto;padding:48px max(16px,env(safe-area-inset-left,0px)) 64px;display:flex;flex-direction:column;gap:32px}
-.hero{display:flex;gap:20px;align-items:flex-end}
-.hero svg{color:var(--accent);flex:none}
-.sway{transform-origin:20px 0;animation:sway 7s ease-in-out infinite}
-@keyframes sway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
-@media (prefers-reduced-motion:reduce){.sway{animation:none}}
-.hero h1{font-size:clamp(34px,6vw,52px);line-height:1}
-.hero p{margin-top:10px;max-width:52ch;color:var(--muted);font-size:17px}
-.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
-@media (max-width:760px){.two{grid-template-columns:minmax(0,1fr)}}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
-.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
-.flow div{border-left:2px solid var(--accent);padding-left:12px;display:flex;flex-direction:column;gap:4px}
-/* app shell */
-.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
-@media (max-width:860px){.app{grid-template-columns:minmax(0,1fr)}}
-aside{background:var(--surface);border-right:1px solid var(--line);padding:18px 12px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;height:100vh;overflow-y:auto}
-@media (max-width:860px){aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}}
-.logo{display:flex;gap:10px;align-items:flex-end;padding:0 8px} .logo svg{color:var(--accent)} .logo b{font:400 22px var(--display)}
-.who{padding:0 8px;display:flex;flex-direction:column;gap:2px}
-nav{display:flex;flex-direction:column;gap:2px}
-@media (max-width:860px){nav{flex-direction:row;flex-wrap:wrap}}
-nav .grp{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px}
-@media (max-width:860px){nav .grp{display:none}}
-nav button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:6px;cursor:pointer;font-weight:500;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px;border-left:2px solid transparent}
-nav button[aria-current="page"]{background:var(--soft);color:var(--fg);border-left-color:var(--accent)}
-.count{background:var(--accent);color:var(--accent-fg);border-radius:10px;font:500 11px/1 var(--mono);padding:3px 6px}
-.content{padding:28px max(20px,env(safe-area-inset-right,0px)) 64px 28px;display:flex;flex-direction:column;gap:22px;min-width:0;max-width:980px}
-@media (max-width:860px){.content{padding:20px 16px 56px}}
-.intro{display:flex;flex-direction:column;gap:6px;max-width:66ch}
-.btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);padding:9px 16px;border-radius:6px;cursor:pointer;font-weight:600}
-.btn.ghost{background:none;color:var(--accent)} .btn.warn{background:none;border-color:var(--red);color:var(--red)}
-.btn.sm{padding:5px 10px;font-size:13px}
-.btn:disabled{opacity:.5;cursor:wait}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-label{display:flex;flex-direction:column;gap:6px;font-weight:500;font-size:14px}
-label.check{flex-direction:row;align-items:flex-start;gap:8px;font-weight:400} label.check input{margin-top:4px}
-input[type=text],input[type=password],textarea,select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%}
-input[type=color]{width:56px;height:36px;padding:2px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
-textarea{min-height:100px;resize:vertical;line-height:1.5}
-.pill{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 7px;border-radius:4px;background:var(--soft);color:var(--muted)}
-.pill.ok{background:var(--green-bg);color:var(--green)} .pill.no{background:var(--red-bg);color:var(--red)} .pill.wait{background:var(--amber-bg);color:var(--amber)} .pill.live{background:var(--green-bg);color:var(--green)}
-.banner{background:var(--amber-bg);color:var(--amber);border-radius:6px;padding:11px 14px;font-size:14px}
-/* plumb */
-.plumb{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px}
-.plumb span{display:flex;flex-direction:column;gap:2px} .plumb b{font-weight:500;letter-spacing:.06em;text-transform:uppercase} .plumb i{font-style:normal;color:var(--muted)}
-.plumb.true{color:var(--green)} .plumb.lean{color:var(--amber)} .plumb.off{color:var(--red)}
-/* cards */
-.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column}
-.card>header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-.card>header .meta{display:flex;flex-direction:column;gap:8px;min-width:0}
-.card .body{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
-.card>footer{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap}
-.flag{background:var(--amber-bg);color:var(--amber);border-radius:6px;padding:9px 11px;font-size:13.5px} .flag.red{background:var(--red-bg);color:var(--red)}
-.day{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;padding-block:12px;border-top:1px solid var(--line)} .day:first-child{border-top:0}
-.day .d{font:500 12px/1.2 var(--mono);color:var(--accent)} .ref{font:500 13px var(--mono);color:var(--accent)}
-details{font-size:13px;color:var(--muted)} details summary{cursor:pointer} blockquote{margin:6px 0 0;padding-left:10px;border-left:2px solid var(--line)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.stat{border-left:2px solid var(--accent);padding-left:10px} .stat b{font:400 30px var(--display);display:block}
-.bars{display:flex;flex-direction:column;gap:8px}
-.bar{display:grid;grid-template-columns:130px minmax(0,1fr) 30px;gap:10px;align-items:center;font-size:13.5px}
-.bar .t{height:10px;background:var(--soft);border-radius:2px} .bar .t i{display:block;height:100%;background:var(--accent);border-radius:2px} .bar .n{font-family:var(--mono);text-align:right}
-.scroll{overflow-x:auto} table{width:100%;border-collapse:collapse;font-size:13.5px}
-th,td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);vertical-align:top} th{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-top:0}
-.check-list{display:flex;flex-direction:column}
-.step{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line)} .step:first-child{border-top:0}
-.dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:12px}
-.dot.done{background:var(--green);border-color:var(--green);color:#fff}
-.progress{height:6px;background:var(--soft);border-radius:3px;overflow:hidden} .progress i{display:block;height:100%;background:var(--accent)}
-.code{font:13px/1.5 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;white-space:pre}
-.policy{white-space:pre-wrap;font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:14px}
-.edit-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;border-top:1px solid var(--line);padding-top:12px} .edit-row:first-child{border-top:0;padding-top:0}
-.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px} @media (max-width:640px){.grid3{grid-template-columns:minmax(0,1fr)}}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:6px;z-index:50;max-width:90vw}
-.err{color:var(--red);font-size:14px;min-height:20px}
-/* overview, boards */
-.chart{width:100%;height:auto;display:block} .chart text{fill:var(--muted);font:11px var(--mono)} .chart .grid{stroke:var(--line);stroke-width:1}
-.s-q{fill:var(--accent)} .s-v{fill:var(--amber)} .s-p{fill:var(--green)} .s-h{fill:var(--muted)}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)} .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
-.need{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)} .need:first-child{border-top:0}
-.need.hot b{color:var(--red)}
-.kan{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;align-items:start}
-.kcol{display:flex;flex-direction:column;gap:10px;min-width:0} .kcol>h3{font-size:15px;display:flex;justify-content:space-between;align-items:center}
-.kcard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0;overflow-wrap:anywhere}
-.kcard select,.kcard input[type=text]{padding:6px 8px;font-size:13px}
-.tags{display:flex;gap:5px;flex-wrap:wrap}
-.task{display:flex;flex-direction:row;gap:8px;align-items:flex-start;font-size:13.5px;font-weight:400} .task input{margin-top:3px} .task.done span{text-decoration:line-through;color:var(--muted)}
-.empty{border:1px dashed var(--line);border-radius:8px;padding:22px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:8px;align-items:center}
-.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px} @media (max-width:760px){.grid4{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
-.pl-grid{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:20px;align-items:start} @media (max-width:760px){.pl-grid{grid-template-columns:minmax(0,1fr)}}
-.qrbox{background:#fff;border-radius:10px;padding:6px;line-height:0;width:max-content;max-width:100%} .qrbox svg{width:100%;height:auto;max-width:240px}
-.meter{height:10px;background:var(--soft);border-radius:5px;overflow:hidden} .meter i{display:block;height:100%;width:0;background:var(--green);transition:width .08s linear}
-.cap{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px;align-items:start} .cap:first-child{border-top:0} .cap .n{font:500 11px var(--mono);color:var(--muted);padding-top:3px}
-.chip{display:inline-flex;gap:6px;align-items:center;background:var(--soft);border-radius:99px;padding:4px 10px;font-size:13px} .chip b{font-family:var(--mono);font-weight:500}
-.togs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px 18px}
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+<link rel="stylesheet" href="/design.css">
 </head>
 <body>
 <div id="root"></div>
@@ -136,10 +19,10 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const ORIGIN=location.origin;
-let TOKEN=null,ST=null,AI=false,AIS=[],VIEW="overview",BUSY={},SURE=null,draft={sermon:""};
+let TOKEN=null,ST=null,AI=false,AIS=[],VIEW="overview",BUSY={},SURE=null,PRD={},VERS=[{id:"web",name:"World English Bible"},{id:"kjv",name:"King James Version"},{id:"bbe",name:"Bible in Basic English"},{id:"webbe",name:"World English Bible, British"},{id:"oeb-us",name:"Open English Bible, US"},{id:"almeida",name:"Almeida (Português)"}],draft={sermon:""};
 try{TOKEN=sessionStorage.getItem("pl-token");draft.sermon=sessionStorage.getItem("pl-sermon")||"";}catch(e){}
 
-const MARK=`<svg width="40" height="62" viewBox="0 0 40 62" aria-hidden="true"><line x1="20" y1="0" x2="20" y2="4" stroke="currentColor" stroke-width="2"/><g class="sway"><line x1="20" y1="3" x2="20" y2="46" stroke="currentColor" stroke-width="1.6"/><path d="M20 62 L12 47 L28 47 Z" fill="currentColor"/></g></svg>`;
+const MARK=`<span class="mark" aria-hidden="true"></span>`;
 function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,3500);}
 async function api(path,method,body){
   const r=await fetch("/api/admin/"+path,{method:method||"GET",headers:{"content-type":"application/json",...(TOKEN?{authorization:"Bearer "+TOKEN}:{})},body:body?JSON.stringify(body):undefined});
@@ -157,40 +40,45 @@ const ago=iso=>{const m=Math.round((Date.now()-new Date(iso))/60000);return m<1?
 /* ---------- auth screen ---------- */
 function authView(){
   $("#root").innerHTML=`<div class="auth">
-  <div class="hero">${MARK}<div><h1>Plumb Line</h1><p>An AI helper for your church that stays true to your doctrine, protects people's privacy and never acts without a pastor's approval. Put it on your website with one line of code.</p></div></div>
+  <div class="cord" aria-hidden="true"><i></i><span class="bob"></span></div>
+  <div class="hero"><div class="brand">${MARK}<span>Plumb Line</span></div><h1>Help that stays true to what you believe.</h1><p>An AI helper for your church website. It answers from what you have confirmed, protects people's privacy, and never sends anything until a pastor approves it.</p></div>
   <div class="flow">
-    <div><span class="label">Visitors</span><b>Ask the questions they were afraid to ask</b><span class="muted">Answers come only from what you confirm.</span></div>
-    <div><span class="label">Members</span><b>Weekly reading plan, prayer, a blessing when they move</b><span class="muted">Every note is approved by a person.</span></div>
-    <div><span class="label">Pastors</span><b>One review queue and an AI log</b><span class="muted">See what AI drafted and decide what goes out.</span></div>
+    <div><b>Ask the questions they were afraid to ask</b><span class="muted">Answers come only from what you confirm.</span></div>
+    <div><b>Weekly reading plan, prayer, a blessing when they move</b><span class="muted">Every note is approved by a person.</span></div>
+    <div><b>One review queue and an AI log</b><span class="muted">See what AI drafted and decide what goes out.</span></div>
   </div>
   <div class="two">
     <form class="panel" id="signup"><h3>Set up your church</h3><p class="muted">Takes two minutes. No credit card.</p>
       <label>Church name<input type="text" id="s-name" required maxlength="80" autocomplete="organization"></label>
       <label>Passcode (at least 8 characters)<input type="password" id="s-pass" required minlength="8" autocomplete="new-password"></label>
       <div class="err" id="s-err" role="alert"></div><div class="row"><button class="btn" id="s-btn">Create my church</button></div></form>
-    <form class="panel" id="login"><h3>Sign in</h3><p class="muted">Use the church ID shown in the sidebar after setup.</p>
+    <form class="panel" id="login"><h3>Sign in</h3><p class="muted">Pastors and staff sign in here. Use the church ID shown in the sidebar.</p>
       <label>Church ID<input type="text" id="l-id" required autocomplete="username"></label>
+      <label>Your name <span class="muted" style="font-weight:400">(staff only, leave empty if you are the pastor)</span><input type="text" id="l-user" maxlength="40" autocomplete="off"></label>
       <label>Passcode<input type="password" id="l-pass" required autocomplete="current-password"></label>
       <div class="err" id="l-err" role="alert"></div><div class="row"><button class="btn ghost" id="l-btn">Sign in</button></div></form>
   </div></div>`;
   $("#signup").onsubmit=async e=>{e.preventDefault();$("#s-btn").disabled=true;try{const j=await api("signup","POST",{name:$("#s-name").value,pass:$("#s-pass").value});setToken(j.token);await refresh();VIEW="start";go();}catch(er){$("#s-err").textContent=er.message;$("#s-btn").disabled=false;}};
-  $("#login").onsubmit=async e=>{e.preventDefault();$("#l-btn").disabled=true;try{const j=await api("login","POST",{id:$("#l-id").value,pass:$("#l-pass").value});setToken(j.token);await refresh();VIEW="overview";go();}catch(er){$("#l-err").textContent=er.message;$("#l-btn").disabled=false;}};
+  $("#login").onsubmit=async e=>{e.preventDefault();$("#l-btn").disabled=true;try{const j=await api("login","POST",{id:$("#l-id").value,user:$("#l-user").value,pass:$("#l-pass").value});setToken(j.token);await refresh();VIEW=ST.role==="team"?"prayers":"overview";go();}catch(er){$("#l-err").textContent=er.message;$("#l-btn").disabled=false;}};
 }
 
 /* ---------- app shell ---------- */
-const NAV=[["Daily",[["overview","Overview"],["brief","Monday Brief"],["pulpit","Live Pulpit"],["queue","Review queue"],["sermon","Sermon to week"]]],
- ["People",[["visitors","Visitors"],["care","Care board"],["insight","What people carry"]]],
- ["Set up",[["start","Get started"],["church","Church & features"],["doctrine","Doctrine & rules"],["faq","Guide answers"],["groups","Small groups"],["partners","Partner churches"]]],
- ["Publish",[["install","Install on your website"],["policy","AI use policy"],["log","AI log"],["engine","AI engine"]]]];
-const badge=k=>{if(k==="pulpit"&&PUL.live)return `<span class="count" style="background:var(--green)">live</span>`;const n=k==="queue"?ST.queue.filter(q=>q.status==="pending").length:k==="visitors"?ST.visitors.filter(v=>v.status==="new").length:k==="care"?ST.care.filter(x=>x.status==="new").length:0;return n?`<span class="count">${n}</span>`:"";};
+const NAV=[["Daily",[["overview","Overview"],["brief","Monday Brief"],["pulpit","Live Pulpit"],["queue","Review queue"],["sermon","Sermon to week"],["devotionals","Daily devotionals"],["library","Series & Bible studies"]]],
+ ["People",[["visitors","Visitors"],["prayers","Prayer board"],["care","Care board"],["insight","What people carry"]]],
+ ["Set up",[["team","Team & members"],["start","Get started"],["church","Church & features"],["doctrine","Doctrine & rules"],["faq","Guide answers"],["groups","Small groups"],["partners","Partner churches"]]],
+ ["Publish",[["page","Church page"],["selftest","Self-test"],["install","Install on your website"],["policy","AI use policy"],["log","AI log"],["engine","AI engine"]]]];
+const badge=k=>{if(k==="pulpit"&&PUL.live)return `<span class="count" style="background:var(--green)">live</span>`;const n=k==="queue"?ST.queue.filter(q=>q.status==="pending").length:k==="visitors"?ST.visitors.filter(v=>v.status==="new").length:k==="care"?ST.care.filter(x=>x.status==="new").length:k==="prayers"?(ST.prayers||[]).filter(x=>x.status==="new").length:0;return n?`<span class="count">${n}</span>`:"";};
+const NAV_TEAM=new Set(["prayers","care","visitors"]);
+const canSee=k=>ST.role==="team"?NAV_TEAM.has(k):k==="team"?ST.role==="pastor":true;
+const ROLE_LABEL={pastor:"Pastor",admin:"Administrator",team:"Prayer and care team"};
 function shell(inner){
   const pend=ST.queue.filter(q=>q.status==="pending").length;
   $("#root").innerHTML=`<div class="app"><aside>
-   <div class="logo">${MARK.replace('width="40" height="62"','width="26" height="40"')}<b>Plumb Line</b></div>
-   <div class="who"><b>${esc(ST.name)}</b><span class="muted mono" style="font-size:12px">ID: ${esc(ST.id)}</span><span>${AI?'<span class="pill live">AI connected</span>':'<span class="pill wait">Offline mode</span>'}</span></div>
-   <nav aria-label="Sections">${NAV.map(([g,items])=>`<div class="grp">${g}</div>`+items.map(([k,l])=>`<button type="button" data-v="${k}" ${VIEW===k?'aria-current="page"':""}>${l}${badge(k)}</button>`).join("")).join("")}</nav>
+   <div class="logo">${MARK}<b>Plumb Line</b></div>
+   <div class="who"><b>${esc(ST.name)}</b><span>${ST.me&&ST.me!==ROLE_LABEL[ST.role]?esc(ST.me)+" · ":""}${ROLE_LABEL[ST.role]||"Pastor"}</span><span class="muted mono" style="font-size:12px">ID: ${esc(ST.id)}</span><span>${AI?'<span class="pill live">AI connected</span>':'<span class="pill wait">Offline mode</span>'}</span></div>
+   <nav aria-label="Sections">${NAV.map(([g,items])=>[g,items.filter(([k])=>canSee(k))]).filter(([g,items])=>items.length).map(([g,items])=>`<div class="grp">${g}</div>`+items.map(([k,l])=>`<button type="button" data-v="${k}" ${VIEW===k?'aria-current="page"':""}>${l}${badge(k)}</button>`).join("")).join("")}</nav>
    <div style="margin-top:auto;padding:0 8px"><button class="btn ghost sm" id="out">Sign out</button></div></aside>
-   <main class="content">${AI?"":`<div class="banner">No AI provider is set up on this server, so drafts use simple rule-based output. Add a free key (for example Groq) to turn AI on. Everything else works.</div>`}${inner}</main></div>`;
+   <main class="content">${AI||ST.role==="team"?"":`<div class="banner">No AI provider is set up on this server, so drafts use simple rule-based output. Add a free key (for example Groq) to turn AI on. Everything else works.</div>`}${inner}</main></div>`;
   document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{VIEW=b.dataset.v;go();window.scrollTo(0,0);});
   $("#out").onclick=signOut;
 }
@@ -253,6 +141,62 @@ const VIEWS={
   return intro("Visitors","People who left their details through the widget, with their consent. You decide who contacts them and when. Nothing is sent automatically.")+
   (vs.length?`<div class="kan">${cols.map(([k,l])=>{const list=vs.filter(v=>v.status===k);return `<div class="kcol"><h3>${l}<span class="pill">${list.length}</span></h3>${list.map(card).join("")||`<span class="muted" style="font-size:13px">None</span>`}</div>`;}).join("")}</div>`+(nope.length?`<details><summary>${nope.length} asked for no contact</summary><div class="kan" style="margin-top:12px">${nope.map(card).join("")}</div></details>`:""):
   `<div class="empty"><b>No visitors yet</b><span>Visitors appear when someone uses the "New here?" tab and chooses to leave contact details. People who prefer to stay anonymous still get their answers, and are only counted.</span><button class="btn" data-go="install">Install the widget</button></div>`);},
+ prayers:()=>{const L=ST.prayers||[],st={new:"New",praying:"Praying",replied:"Replied",closed:"Closed"};
+  const card=x=>`<article class="card"><header><div class="meta"><div class="row"><span class="pill">${esc(x.theme)}</span><span class="pill ${x.status==="new"?"wait":x.status==="closed"?"":"ok"}">${st[x.status]||x.status}</span><span class="muted" style="font-size:13px">${ago(x.at)}</span></div>
+   <b>${esc(x.name||"Anonymous")}${x.contact?` · ${esc(x.contact)}`:""}</b></div></header>
+   <div class="body"><p>${esc(x.text)}</p>
+   ${x.reply?`<div class="flag" style="background:var(--green-bg);color:var(--green);border-left-color:var(--green)"><b>Sent to them ${ago(x.reply.at)}:</b> ${esc(x.reply.text)}</div>`:""}
+   <label>${x.reply?"Write a new reply":"Your reply"}<textarea data-prtext="${x.id}" rows="3" maxlength="800" placeholder="Write a short, warm reply. They will see it in the prayer tab on your website.">${esc(PRD[x.id]||"")}</textarea></label><div data-prflag="${x.id}"></div></div>
+   <footer><button class="btn sm" data-prsend="${x.id}">Send reply</button><button class="btn ghost sm" data-prdraft="${x.id}" ${BUSY["pd"+x.id]?"disabled":""}>${BUSY["pd"+x.id]?"Drafting…":"Draft with AI"}</button>${x.status==="new"?`<button class="btn ghost sm" data-prpray="${x.id}">Mark as praying</button>`:""}${x.status!=="closed"?`<button class="btn ghost sm" data-prclose="${x.id}">Close</button>`:""}<button class="btn warn sm" data-prerase="${x.id}">${SURE===x.id?"Confirm: erase":"Erase"}</button></footer></article>`;
+  return intro("Prayer board","Requests people chose to share with your team. Private requests are never kept and never appear here. Your reply shows up for them in the prayer tab, with nothing sent by email or text.")+
+  `<div class="banner">These requests are private. Anyone with access to this dashboard can read them. Erase a request when you no longer need it. People can also remove their own.</div>`+
+  (L.length?`<div style="display:flex;flex-direction:column;gap:14px">${L.map(card).join("")}</div>`:`<div class="empty"><b>No shared requests yet</b><span>When someone ticks "Share with the prayer team" in the Prayer tab, their request lands here so you can pray and reply. Everyone else's stays private.</span><a class="btn ghost" href="/c/${esc(ST.id)}" target="_blank" rel="noopener">Try it on your church page</a></div>`);},
+ devotionals:()=>{const L=(ST.devotionals||[]).slice().sort((a,b)=>a.date.localeCompare(b.date)),today=new Date().toISOString().slice(0,10),drafts=L.filter(d=>d.status==="draft").length;
+  const ver=v=>VERS.map(x=>`<option value="${x.id}" ${x.id===v?"selected":""}>${esc(x.name)}</option>`).join("");
+  const card=d=>`<form class="card" data-dev="${d.id}"><header><div class="meta"><div class="row"><span class="pill ${d.status==="published"?"ok":"wait"}">${d.status==="published"?"Published":"Draft"}</span><b>${esc(d.date)}</b>${d.date===today?`<span class="pill">Today</span>`:""}</div>${(d.flags||[]).map(f=>`<div class="flag">${esc(f)}</div>`).join("")}</div></header>
+   <div class="body"><div class="two"><label>Date<input type="date" data-f="date" value="${esc(d.date)}"></label><label>Title<input type="text" data-f="title" value="${esc(d.title)}" maxlength="100"></label></div>
+   <div class="two"><label>Scripture reference<input type="text" data-f="ref" value="${esc(d.ref)}" maxlength="60" placeholder="John 3:16"></label><label>Version<select data-f="version">${ver(d.version||"web")}</select></label></div>
+   <div class="row"><button type="button" class="btn ghost sm" data-lookup="${d.id}">Look up the text</button><span class="muted" style="font-size:13px">Public-domain versions only. You can also type or paste the verse from a version your church is licensed to use.</span></div>
+   <label>Verse text (optional)<textarea data-f="text" rows="2" maxlength="3000">${esc(d.text||"")}</textarea></label>
+   <label>Reflection<textarea data-f="reflection" rows="5" maxlength="1400">${esc(d.reflection)}</textarea></label>
+   <label>Question for today<input type="text" data-f="question" value="${esc(d.question)}" maxlength="300"></label><label>Prayer<input type="text" data-f="prayer" value="${esc(d.prayer)}" maxlength="500"></label></div>
+   <footer><button class="btn sm" data-devsave="${d.id}">Save</button>${d.status==="published"?`<button type="button" class="btn ghost sm" data-devpub="${d.id}" data-act="unpublish">Pull back to draft</button>`:`<button type="button" class="btn ghost sm" data-devpub="${d.id}" data-act="publish">Approve and publish</button>`}<button type="button" class="btn warn sm" data-deverase="${d.id}">${SURE===d.id?"Confirm: delete":"Delete"}</button></footer></form>`;
+  return intro("Daily devotionals","A short reading with a verse, reflection, question and prayer for each day. Write a week or a month at once, edit what you like, then approve. People see each one in the Today tab on the day you choose.")+
+  `<form class="panel" id="f-devgen"><div class="two"><label>What are they about?<input type="text" id="dg-topic" maxlength="200" placeholder="Trusting God in hard seasons"></label><label>Or work through a book or passage<input type="text" id="dg-pass" maxlength="120" placeholder="Philippians"></label></div>
+   <div class="grid3"><label>How many days<select id="dg-days">${[[1,"1 day"],[7,"1 week (7 days)"],[14,"2 weeks"],[30,"A month (30 days)"]].map(([n,l])=>`<option value="${n}" ${n===7?"selected":""}>${l}</option>`).join("")}</select></label><label>Starting on<input type="date" id="dg-start" value="${today}"></label><span></span></div>
+   <div class="row"><button class="btn" id="dg-btn" ${BUSY.dg?"disabled":""}>${BUSY.dg?"Writing…":"Write drafts"}</button><span class="muted">Drafts are not seen by anyone until you approve them.</span></div></form>`+
+  (L.length?`<div class="row">${drafts?`<button class="btn ghost" id="dev-all">Approve and publish all ${drafts} drafts</button>`:""}</div><div style="display:flex;flex-direction:column;gap:14px">${L.map(card).join("")}</div>`:`<div class="empty"><b>No devotionals yet</b><span>Write the first week above. A verse of the day with a short reflection is a gentle way for people to come back to your church every day.</span></div>`);},
+ library:()=>{const L=(ST.series||[]).slice().reverse(),today=new Date().toISOString().slice(0,10);
+  const when=x=>x.cadence==="daily"?"Daily":"Weekly";
+  const item=(x,it,i)=>`<details class="card" style="padding:0" ${i===0?"open":""}><summary style="padding:12px 16px;font-weight:650;color:var(--fg)">${it.n}. ${esc(it.title||"Untitled")}</summary><div class="body" data-item="${i}"><div class="two"><label>Title<input type="text" data-i="title" value="${esc(it.title)}" maxlength="100"></label><label>Passage<input type="text" data-i="passage" value="${esc(it.passage)}" maxlength="80"></label></div>
+    <label>Summary<textarea data-i="summary" rows="4" maxlength="700">${esc(it.summary)}</textarea></label><label>Discussion questions (one per line)<textarea data-i="questions" rows="4">${esc((it.questions||[]).join("\n"))}</textarea></label>
+    <label>Application<input type="text" data-i="application" value="${esc(it.application)}" maxlength="300"></label><label>Prayer<input type="text" data-i="prayer" value="${esc(it.prayer)}" maxlength="400"></label></div></details>`;
+  const card=x=>`<article class="card" data-ser="${x.id}"><header><div class="meta"><div class="row"><span class="pill ${x.status==="published"?"ok":"wait"}">${x.status==="published"?"Published":"Draft"}</span><span class="pill">${x.kind==="study"?"Bible study":"Sermon series"}</span><span class="muted" style="font-size:13px">${when(x)} from ${esc(x.start)}, ${x.items.length} parts</span></div>${(x.flags||[]).map(f=>`<div class="flag">${esc(f)}</div>`).join("")}</div></header>
+   <div class="body"><div class="two"><label>Title<input type="text" data-s="title" value="${esc(x.title)}" maxlength="100"></label><label>One-line description<input type="text" data-s="blurb" value="${esc(x.blurb||"")}" maxlength="300"></label></div>
+   <div class="grid3"><label>Starts on<input type="date" data-s="start" value="${esc(x.start)}"></label><label>One part every<select data-s="cadence"><option value="weekly" ${x.cadence==="weekly"?"selected":""}>week</option><option value="daily" ${x.cadence==="daily"?"selected":""}>day</option></select></label><span></span></div>
+   ${x.items.map((it,i)=>item(x,it,i)).join("")}</div>
+   <footer><button class="btn sm" data-sersave="${x.id}">Save changes</button>${x.status==="published"?`<button class="btn ghost sm" data-serpub="${x.id}" data-act="unpublish">Pull back to draft</button>`:`<button class="btn ghost sm" data-serpub="${x.id}" data-act="publish">Approve and publish</button>`}<button class="btn ghost sm" data-serhand="${x.id}">Copy as handout</button><button class="btn warn sm" data-serdel="${x.id}">${SURE===x.id?"Confirm: delete":"Delete"}</button></footer></article>`;
+  return intro("Series & Bible studies","Plan a sermon series or a small-group Bible study for 4 weeks, a quarter or any length. Each part gets a passage, a summary, discussion questions, an application and a prayer. People follow along in the Today tab, one part at a time.")+
+  `<form class="panel" id="f-sergen"><div class="grid3"><label>What is it?<select id="sg-kind"><option value="study">Bible study (for small groups)</option><option value="series">Sermon series (with a study guide for each message)</option></select></label><label>Parts<select id="sg-count">${[[4,"4 (a month of weeks)"],[6,"6"],[8,"8"],[12,"12 (a quarter)"],[26,"26 (half a year)"]].map(([n,l])=>`<option value="${n}">${l}</option>`).join("")}</select></label><label>One part every<select id="sg-cad"><option value="weekly">week</option><option value="daily">day</option></select></label></div>
+   <div class="two"><label>Topic<input type="text" id="sg-topic" maxlength="200" placeholder="The Sermon on the Mount"></label><label>Or book or passage<input type="text" id="sg-pass" maxlength="120" placeholder="Matthew 5-7"></label></div>
+   <label>Anything you want emphasised (optional)<textarea id="sg-notes" rows="3" maxlength="1500" placeholder="For example: for young families, focus on practical application, avoid heavy theology."></textarea></label>
+   <div class="grid3"><label>Starts on<input type="date" id="sg-start" value="${today}"></label><span></span><span></span></div>
+   <div class="row"><button class="btn" id="sg-btn" ${BUSY.sg?"disabled":""}>${BUSY.sg?"Writing…":"Write the plan"}</button><span class="muted">It stays a draft until you approve it.</span></div></form>`+
+  (L.length?`<div style="display:flex;flex-direction:column;gap:16px">${L.map(card).join("")}</div>`:`<div class="empty"><b>Nothing planned yet</b><span>Try "The Sermon on the Mount, 4 weeks" as a Bible study to see how it works.</span></div>`);},
+ team:()=>{const S=ST.staff||[],M=ST.members||[],role={admin:"Administrator",team:"Prayer and care team"};
+  return intro("Team & members","Give your staff and volunteers their own sign-in, and see who has made a member account. Visitors never need an account: they ask, request prayer and ask for help without signing in.")+
+  `<div class="panel"><h3>Who can do what</h3><div class="scroll"><table><thead><tr><th>Person</th><th>How they sign in</th><th>What they can do</th></tr></thead><tbody>
+   <tr><td><b>Pastor</b></td><td>Church ID and your passcode</td><td>Everything, including approving what goes out, publishing, doctrine, and managing the team.</td></tr>
+   <tr><td><b>Administrator</b></td><td>Church ID, their name, their passcode</td><td>Everything except managing the team: queue, sermons, devotionals, studies, page, install, brief, live captions.</td></tr>
+   <tr><td><b>Prayer and care team</b></td><td>Church ID, their name, their passcode</td><td>Only the Prayer board, Care board and Visitors. They can reply to prayer (signed with their name), update cards, and cannot publish, approve or delete.</td></tr>
+   <tr><td><b>Member</b></td><td>Name and passcode in the widget (optional)</td><td>See their own shared prayer requests and replies on any phone, and delete their account.</td></tr>
+   <tr><td><b>Visitor</b></td><td>No sign-in</td><td>Ask, find a group, request prayer or help, read the Today tab and live captions.</td></tr></tbody></table></div></div>
+  <form class="panel" id="f-staff"><h3>Add a team member</h3><div class="grid3"><label>Name<input type="text" id="sf-name" maxlength="40" placeholder="Ruth Adeyemi"></label><label>Role<select id="sf-role"><option value="team">Prayer and care team</option><option value="admin">Administrator</option></select></label><label>Temporary passcode<input type="text" id="sf-pass" minlength="8" maxlength="200" placeholder="At least 8 characters"></label></div>
+   <p class="muted">Tell them the church ID (<span class="mono">${esc(ST.id)}</span>), their name and this passcode, and ask them to sign in at your dashboard address. Removing or pausing someone signs them out immediately.</p><div class="row"><button class="btn">Add</button></div></form>
+  <div class="panel"><h3>Your team</h3>${S.length?`<div class="check-list">${S.map(u=>`<div class="step" style="grid-template-columns:minmax(0,1fr) auto"><span><b>${esc(u.name)}</b> <span class="pill ${u.off?"no":"ok"}">${u.off?"Paused":role[u.role]}</span><br><span class="muted" style="font-size:13px">${u.last?"Last signed in "+ago(u.last):"Has not signed in yet"}</span></span>
+   <span class="row"><button class="btn ghost sm" data-streset="${u.id}">Reset passcode</button><button class="btn ghost sm" data-stoff="${u.id}" data-off="${u.off?0:1}">${u.off?"Resume":"Pause"}</button><button class="btn warn sm" data-stdel="${u.id}">${SURE===u.id?"Confirm: remove":"Remove"}</button></span></div>`).join("")}</div>`:`<p class="muted">No team members yet. You are the only person who can sign in.</p>`}</div>
+  <div class="panel"><h3>Member accounts</h3><p class="muted">Members create these themselves from the Prayer tab. We keep only a name and a passcode, no email or phone. If someone forgets their passcode, reset it here and tell them in person.</p>
+   ${M.length?`<div class="check-list">${M.map(m=>`<div class="step" style="grid-template-columns:minmax(0,1fr) auto"><span><b>${esc(m.name)}</b><br><span class="muted" style="font-size:13px">Joined ${ago(m.at)} · ${m.prayers} shared request${m.prayers===1?"":"s"}</span></span><span class="row"><button class="btn ghost sm" data-mreset="${m.id}">Reset passcode</button><button class="btn warn sm" data-mdel="${m.id}">${SURE===m.id?"Confirm: remove":"Remove"}</button></span></div>`).join("")}</div>`:`<p class="muted">No member accounts yet.</p>`}</div>`;},
  care:()=>{
   const cols=[["new","New"],["inprogress","In progress"],["done","Done"]],list=ST.care,kinds={meal:"Meal",ride:"Ride",visit:"Visit or call",errand:"Errand",other:"Other"};
   const card=x=>`<article class="kcard"><div class="row" style="justify-content:space-between"><span class="pill">${kinds[x.kind]||"Other"}</span><span class="muted" style="font-size:12px">${ago(x.at)}</span></div>
@@ -269,12 +213,24 @@ const VIEWS={
    <div class="grid3"><input type="text" data-a placeholder="Area or neighborhood" value="${esc(g.area)}" maxlength="60"><input type="text" data-s placeholder="Who it is for, e.g. young families" value="${esc(g.stage)}" maxlength="60"><input type="text" data-o placeholder="Topic, e.g. Bible study" value="${esc(g.topic)}" maxlength="60"></div>
    <textarea data-e placeholder="One or two sentences about what happens" maxlength="240" style="min-height:60px">${esc(g.desc)}</textarea><label class="check"><input type="checkbox" data-k ${g.open?"checked":""}>Open to new people</label></div><button type="button" class="btn warn sm" data-delgrp="${i}">Remove</button></div>`).join(""):`<p class="muted">No groups yet. Add the groups that meet at your church. Do not list member names or home addresses.</p>`}
   <div class="row"><button type="button" class="btn ghost" id="addgrp">Add a group</button><button class="btn">Save groups</button></div></form>`,
- engine:()=>intro("AI engine","Plumb Line tries these providers in order. If one is busy, down or returns something unusable, the next one answers. If all fail, a simple rule-based draft is used, so the widget never goes silent.")+
-  `<section class="panel"><div class="row" style="justify-content:space-between"><h3>Providers</h3><button class="btn" id="aitest" ${BUSY.aitest?"disabled":""}>${BUSY.aitest?"Testing…":"Test connections"}</button></div>
-  ${AIS.length?`<div class="scroll"><table><thead><tr><th>Order</th><th>Provider</th><th>Model</th><th>Private text</th><th>Status</th><th>Answered</th><th>Failed</th></tr></thead><tbody>${AIS.map((p,i)=>`<tr><td class="mono">${i+1}</td><td><b>${esc(p.name)}</b></td><td class="mono" style="font-size:12px">${esc(p.quick)}<br>${esc(p.default)}</td><td>${p.privateOk?'<span class="pill ok">allowed</span>':'<span class="pill wait">blocked</span>'}</td><td>${p.state==="ready"?'<span class="pill ok">ready</span>':'<span class="pill wait">'+esc(p.state)+(p.coolSeconds?" "+p.coolSeconds+"s":"")+'</span>'}${p.last?`<div class="muted" style="font-size:12px">last problem: ${esc(p.last)}</div>`:""}</td><td class="mono">${p.ok}</td><td class="mono">${p.fail}</td></tr>`).join("")}</tbody></table></div>
-  ${BUSY.aires?`<div class="check-list">${BUSY.aires.map(r=>`<div class="step"><span class="dot ${r.ok?"done":""}">${r.ok?"✓":"!"}</span><span><b>${esc(r.name)}</b> <span class="muted mono" style="font-size:12px">${esc(r.model)}</span></span><span class="mono">${r.ok?r.ms+" ms":esc(r.error)}</span></div>`).join("")}</div>`:""}`:
-  `<div class="empty"><b>No provider configured</b><span>Set at least one key on the server, for example <span class="mono">GROQ_API_KEY</span>, then restart. See the README for the full list.</span></div>`}</section>
-  <section class="panel"><h3>Private text stays on private providers</h3><p class="muted">Prayer requests, care requests, visitor questions and member names are only sent to providers marked <b>allowed</b>. Some free tiers may use prompts to improve their products, so those are blocked for private text and used only for public content such as the pastor's own sermon. The server owner can change this per provider.</p></section>`,
+ selftest:()=>{const R=BUSY.selftest;return intro("Self-test","Checks, in one click, that everything your congregation will touch is ready, and tells you exactly how to fix anything that is not.")+
+  `<div class="panel"><div class="row"><button class="btn" id="stbtn" ${BUSY.stbusy?"disabled":""}>${BUSY.stbusy?"Testing…":"Run self-test"}</button>${R?`<span class="pill ${R.passed===R.total?"ok":"wait"}">${R.passed} of ${R.total} ready</span>`:""}</div>
+   ${R?`<div class="check-list">${R.results.map(x=>`<div class="step"><span class="dot ${x.ok?"done":""}">${x.ok?"✓":""}</span><span><b>${esc(x.name)}</b>${x.detail?`<br><span class="muted">${esc(x.detail)}</span>`:""}${x.ok?"":`<br><span style="color:var(--red)">${esc(x.fix)}</span>`}</span><span></span></div>`).join("")}</div>`:`<p class="muted">Nothing has been tested yet.</p>`}</div>`;},
+ engine:()=>intro("AI engine","Every provider you add is another safety net. Plumb Line asks each one which models it offers today, tries the best match first, and moves to the next model or provider the moment one is busy, retired or returns something unusable. If everything fails, a plain rule-based draft is used, so the widget never goes silent.")+
+  `<section class="panel"><div class="row" style="justify-content:space-between"><h3>Providers, in the order they are tried</h3><button class="btn" id="aitest" ${BUSY.aitest?"disabled":""}>${BUSY.aitest?"Testing…":"Test connections"}</button></div>
+  ${BUSY.aires?`<div class="check-list">${BUSY.aires.map(r=>`<div class="step"><span class="dot ${r.ok?"done":""}">${r.ok?"✓":"!"}</span><span style="min-width:0"><b>${esc(r.name)}</b> <span class="muted mono" style="font-size:12px">${esc(r.model||"")}</span>${r.ok?"":`<div class="muted" style="font-size:12.5px">${esc(r.error)}${r.detail?": "+esc(r.detail):""}</div>`}</span><span class="mono">${r.ok?r.ms+" ms":"failed"}</span></div>`).join("")}</div>`:""}
+  ${AIS.length?AIS.map((p,i)=>`<div class="card" style="margin-top:6px"><header><div class="meta"><div class="row"><span class="label">${i+1}</span><h3 style="text-transform:capitalize">${esc(p.name)}</h3>${p.state==="ready"?'<span class="pill ok">ready</span>':p.state==="partly limited"?'<span class="pill wait">partly limited</span>':'<span class="pill no">'+esc(p.state)+(p.coolSeconds?" "+p.coolSeconds+"s":"")+'</span>'}${p.privateOk?'<span class="pill ok">private text allowed</span>':'<span class="pill wait">public text only</span>'}</div>
+    <span class="muted" style="font-size:13px">${p.listed!=null?p.listed+" models listed by the provider":esc(p.listErr||"model list not fetched yet")} · ${p.ok} answered · ${p.fail} failed${p.last&&p.last!=="ok"?" · last problem: "+esc(p.last)+(p.detail?" ("+esc(p.detail)+")":""):""}</span></div></header>
+    <div class="body" style="padding:8px 18px"><div class="scroll"><table><thead><tr><th>Model</th><th>Used for</th><th>Status</th><th>Answered</th><th>Failed</th><th>Speed</th></tr></thead><tbody>${p.models.map(m=>`<tr><td class="mono" style="font-size:12px;word-break:break-all">${esc(m.id)}</td><td>${m.tier==="both"?"both":m.tier==="quick"?"fast":"careful"}</td><td>${m.state==="ready"?'<span class="pill ok">ready</span>':'<span class="pill wait">'+esc(m.state)+(m.coolSeconds?" "+m.coolSeconds+"s":"")+'</span>'}</td><td class="mono">${m.ok}</td><td class="mono">${m.fail}</td><td class="mono">${m.avgMs?m.avgMs+" ms":"–"}</td></tr>`).join("")}</tbody></table></div></div></div>`).join(""):
+  `<div class="empty"><b>No AI provider is set up</b><span>Add at least one free key to a file named <span class="mono">.env</span> next to <span class="mono">server.js</span>, then restart. The list below shows where to get each.</span></div>`}</section>
+  <section class="panel"><h3>Add more free providers</h3><p class="muted">Copy <span class="mono">.env.example</span> to <span class="mono">.env</span>, paste a key after the <span class="mono">=</span>, save, and restart the server. You do not need to type model names.</p>
+  <div class="scroll"><table><tbody>
+   <tr><td><b>GROQ_API_KEY</b></td><td>Also does the speech-to-text for Live Pulpit</td><td class="mono" style="font-size:12px">console.groq.com/keys</td></tr>
+   <tr><td><b>CEREBRAS_API_KEY</b></td><td>Fast backup</td><td class="mono" style="font-size:12px">cloud.cerebras.ai</td></tr>
+   <tr><td><b>GEMINI_API_KEY</b></td><td>Strong in many languages</td><td class="mono" style="font-size:12px">aistudio.google.com/apikey</td></tr>
+   <tr><td><b>OPENROUTER_API_KEY</b></td><td>Many free models behind one key</td><td class="mono" style="font-size:12px">openrouter.ai/keys</td></tr>
+   <tr><td><b>MISTRAL_API_KEY</b></td><td>Backup</td><td class="mono" style="font-size:12px">console.mistral.ai/api-keys</td></tr></tbody></table></div></section>
+  <section class="panel"><h3>Private text and free tiers</h3><p class="muted">Prayer requests, care requests, visitor questions and member names are only sent to providers marked <b>private text allowed</b>. Gemini, Mistral and OpenRouter free tiers may use prompts to improve their products, so by default they only see public text such as sermon captions. While you test with made-up data you can allow them everywhere by adding <span class="mono">AI_ALLOW_TRAINING_PROVIDERS=true</span> to <span class="mono">.env</span>. Never do that with real members' information.</p></section>`,
  queue:()=>{const p=ST.queue.filter(q=>q.status==="pending"),d=ST.queue.filter(q=>q.status!=="pending").slice(0,10);
    return intro("Review queue","Nothing reaches your people until you approve it. Each card shows how closely the draft stays true to its source and your doctrine.")+
    (p.length?p.map(q=>reviewCard(q)).join(""):`<div class="panel" style="border-style:dashed;text-align:center;align-items:center"><p>Nothing is waiting for you.</p><p class="muted">Drafts appear when visitors, members or you start using the widget.</p><button class="btn" data-go="sermon">Draft a reading plan</button></div>`)+
@@ -307,15 +263,36 @@ const VIEWS={
   `<form class="panel" id="f-par">${ST.partners.length?ST.partners.map((p,i)=>`<div class="edit-row" data-i="${i}"><div style="display:flex;flex-direction:column;gap:8px"><div class="grid3"><input type="text" data-n placeholder="Church name" value="${esc(p.name)}" maxlength="80"><input type="text" data-c placeholder="City, Region" value="${esc(p.city)}" maxlength="80"><input type="text" data-l placeholder="Languages, comma separated" value="${esc(p.langs.join(", "))}"></div>
    <div class="row"><select data-s style="width:auto">${["Contemporary","Blended","Traditional"].map(s=>`<option ${p.style===s?"selected":""}>${s}</option>`).join("")}</select><label class="check"><input type="checkbox" data-k ${p.kids?"checked":""}>Has children's ministry</label></div></div><button type="button" class="btn warn sm" data-delpar="${i}">Remove</button></div>`).join(""):`<p class="muted">No partner churches yet. Members who are moving will be told no partner is available.</p>`}
   <div class="row"><button type="button" class="btn ghost" id="addpar">Add a church</button><button class="btn">Save churches</button></div></form>`,
- install:()=>{const snip=`<script src="${ORIGIN}/widget.js" data-church="${ST.id}" async><\/script>`;
-  return intro("Install on your website","Paste one line into your site. A chat button appears on every page. It runs in its own sealed box, so it cannot break your site's design.")+
-  `<div class="panel"><span class="label">Your code</span><div class="code" id="snip">${esc(snip)}</div><div class="row"><button class="btn" id="copy">Copy code</button><button class="btn ghost" id="try">Try it on this page</button><a href="/demo.html?church=${esc(ST.id)}" target="_blank" rel="noopener">Open a sample church website</a></div></div>
-  <div class="two"><div class="panel"><span class="label">Where to paste it</span>
-   <p><b>WordPress.</b> Install the free "Insert Headers and Footers" plugin and paste into Footer. Or add a Custom HTML block to your footer widget.</p>
-   <p><b>Squarespace.</b> Settings, Advanced, Code Injection, Footer.</p><p><b>Wix.</b> Settings, Custom Code, add to Body end, All pages.</p>
-   <p><b>Webflow.</b> Site settings, Custom code, Footer code.</p><p><b>Plain HTML.</b> Paste before the closing body tag.</p><p class="muted">Church website builders and Planning Center Websites have a similar footer or custom code box.</p></div>
-  <form class="panel" id="f-origin"><span class="label">Lock to your domain</span><p class="muted">Only these websites may use your widget. Leave empty while testing. Include https:// and no trailing slash.</p>
-   <textarea id="origins" rows="4" placeholder="https://www.yourchurch.org">${esc(ST.origins.join("\n"))}</textarea><div class="row"><button class="btn">Save domains</button></div></form></div>`;},
+ page:()=>{const url=ORIGIN+"/c/"+ST.id,S=ST.site||{};
+  return intro("Church page","No website? This is one. Share the address or QR code and your people get service times, groups, this week's reading, answers, prayer and live captions, with your chat button already on it. Have a website? Install the button there instead, or do both.")+
+  `<div class="pl-grid"><section class="panel"><span class="label">Scan to open</span><div class="qrbox">${PlumbQR.svg(url,{size:240})}</div></section>
+  <section class="panel"><span class="label">Your page address</span><div class="code" id="pgurl">${esc(url)}</div>
+   <div class="row"><button class="btn" id="pgcopy">Copy address</button><a class="btn ghost" href="${esc(url)}" target="_blank" rel="noopener">Open your page</a></div>
+   ${/localhost|127\.0\.0\.1/.test(ORIGIN)?`<div class="banner">This address only works on this computer. To share it, put Plumb Line on a public server first (see the README, Deploy).</div>`:""}
+   <p class="muted">Put it on your bulletin, your social profiles and the screen before service. Printing the QR code (right-click, save image) works well on a door sign.</p></section></div>
+  <form class="panel" id="f-site"><label class="check"><input type="checkbox" id="st-on" ${S.on!==false?"checked":""}>Show my church page to the public</label>
+   <label>When you meet<textarea id="st-times" rows="3" placeholder="Sundays 9:00 AM and 11:00 AM&#10;Wednesdays 7:00 PM, prayer">${esc(S.times||"")}</textarea></label>
+   <label>Address<input type="text" id="st-addr" value="${esc(S.address||"")}" maxlength="200" placeholder="12 Harbor Road, Lagos"></label>
+   <div class="two"><label>Phone<input type="text" id="st-phone" value="${esc(S.phone||"")}" maxlength="40"></label><label>Email<input type="text" id="st-email" value="${esc(S.email||"")}" maxlength="120"></label></div>
+   <label>About us<textarea id="st-about" rows="5" maxlength="1200" placeholder="Two or three sentences a first-time visitor would want to read.">${esc(S.about||"")}</textarea></label>
+   <p class="muted">The page also shows your pastor's name, open small groups, this week's approved reading plan and your guide answers. Edit those under Set up.</p>
+   <div class="row"><button class="btn">Save church page</button></div></form>`;},
+ install:()=>{const snip=`<script src="${ORIGIN}/widget.js" data-church="${ST.id}" async><\/script>`,local=/localhost|127\.0\.0\.1/.test(ORIGIN);
+  return intro("Install on your website","Three steps. If your church has no website yet, skip this and share your Church page instead.")+
+  (local?`<div class="banner">Your server address is <b>${esc(ORIGIN)}</b>, which only works on this computer. A real website cannot load the button from here. Put Plumb Line on a public server first, then copy the code again.</div>`:"")+
+  `<div class="panel"><h3>1. Copy your code</h3><div class="code" id="snip">${esc(snip)}</div><div class="row"><button class="btn" id="copy">Copy code</button><button class="btn ghost" id="try">Try it on this page</button></div></div>
+  <div class="panel"><h3>2. Paste it into your website</h3><p class="muted">Every site builder has a place for extra code at the bottom of every page. Pick yours.</p>
+   <details open><summary><b>WordPress</b></summary><p>Install the free plugin "WPCode" (or "Insert Headers and Footers"). Open it, choose Footer, paste, save. Or add a Custom HTML block to your footer widget area.</p></details>
+   <details><summary><b>Squarespace</b></summary><p>Settings, Developer Tools (or Advanced), Code Injection, Footer. Paste and save. Needs a Business plan or higher.</p></details>
+   <details><summary><b>Wix</b></summary><p>Settings, Custom Code, Add Custom Code. Paste, choose All pages, place in Body, end. Needs a paid Premium plan.</p></details>
+   <details><summary><b>Webflow</b></summary><p>Site settings, Custom code, Footer code. Paste, save, then publish.</p></details>
+   <details><summary><b>Plain HTML or another builder</b></summary><p>Paste the line just before the closing body tag on every page, or in the footer or "custom code" box your builder gives you.</p></details>
+   <details><summary><b>Someone else runs our website</b></summary><p>Send them the code from step 1 and this sentence: "Please paste this before the closing body tag on every page."</p></details></div>
+  <div class="panel"><h3>3. Check that it worked</h3><form class="row" id="f-check"><input type="text" id="chk-url" placeholder="https://www.yourchurch.org" style="flex:1;min-width:220px"><button class="btn">Check my website</button></form><div id="chk-out" class="muted" role="status"></div>
+   <p class="muted">Remember to save and publish in your site builder first. The check looks at your public page, so it only sees what visitors see.</p></div>
+  <form class="panel" id="f-origin"><h3>Optional: lock it to your domain</h3><p class="muted">Only these websites may use your widget. Leave empty while testing. Include https:// and no trailing slash. Your own Church page always works.</p>
+   <textarea id="origins" rows="3" placeholder="https://www.yourchurch.org">${esc(ST.origins.join("\n"))}</textarea><div class="row"><button class="btn ghost">Save domains</button></div></form>
+  <div class="panel"><h3>Who is the sample website for?</h3><p class="muted">It is a made-up church called Harbor Church, so you can see what your visitors will see before you touch your own site. It is not your website and nothing there is saved.</p><div class="row"><a class="btn ghost" href="/demo.html?church=${esc(ST.id)}" target="_blank" rel="noopener">See the button on a sample site</a></div></div>`;},
  policy:()=>intro("AI use policy","Written from your settings. Adopt it, edit it, and share it with your team and congregation.")+`<div class="panel"><div class="policy" id="policy">${esc(policyText())}</div><div class="row"><button class="btn" id="pcopy">Copy</button><button class="btn ghost" id="pdl">Download .txt</button></div></div>`,
  log:()=>intro("AI log","What AI drafted, which path produced it, and who approved it.")+`<div class="panel"><div class="row"><button class="btn ghost sm" id="csv" ${ST.log.length?"":"disabled"}>Export CSV</button></div><div class="scroll"><table><thead><tr><th>When</th><th>Agent</th><th>What</th><th>Source</th><th>Human decision</th></tr></thead><tbody>${ST.log.length?ST.log.slice(0,100).map(l=>`<tr><td class="mono">${ago(l.at)}</td><td>${esc(l.agent)}</td><td>${esc(l.what)}</td><td class="mono">${esc(l.mode)}</td><td>${esc(l.decision)}</td></tr>`).join(""):`<tr><td colspan="5" class="muted">Nothing yet.</td></tr>`}</tbody></table></div></div>`
 };
@@ -371,7 +348,7 @@ function plDraw(){
 }
 const plViews=v=>Object.keys(v).length?Object.entries(v).map(([l,n])=>`<span class="chip">${esc(l)}</span>`).join(""):`<span class="muted" style="font-size:13.5px">Nobody has opened the page yet.</span>`;
 const plRecent=A=>A.recent.length?A.recent.slice().reverse().map(x=>`<div class="cap"><span class="n">${x.n}</span><span>${esc(x.o)}</span><span class="muted mono" style="font-size:11px">${x.langs.length?x.langs.length+" lang":""}</span></div>`).join(""):`<p class="muted">Nothing yet. Captions appear here as you speak or type.</p>`;
-const plStats=A=>`${A.lines} lines · ${A.stats.silent} silent chunks skipped · ${A.stats.failed} speech errors · ${A.stats.translateFailed} translation errors`;
+const plStats=A=>`${A.lines} lines · ${A.stats.silent} silent chunks skipped · ${A.stats.failed} speech errors · ${A.stats.translateFailed} translation errors`+(A.stats.why?` · last problem: ${A.stats.why}`:"");
 function plPast(){const sv=(ST.pulpit&&ST.pulpit.services)||[];return sv.length?`<section class="panel"><h3>Past services</h3><div class="scroll"><table><tbody>${sv.map(x=>`<tr><td><b>${esc(x.title)}</b><br><span class="muted">${new Date(x.at).toLocaleString()}</span></td><td class="mono">${x.count} lines</td><td><button class="btn ghost sm" data-tx="${esc(x.id)}">Download transcript</button></td></tr>`).join("")}</tbody></table></div><p class="muted" style="font-size:13px">Only the text you spoke is saved, not translations. It can feed Sermon to week.</p></section>`:"";}
 async function plTick(){
   if(!TOKEN){return;}
@@ -489,6 +466,35 @@ function bind(){
 
   /* people and boards */
   const act=async(fn,msg)=>{try{await fn();await refresh();if(msg)toast(msg);go();}catch(e){toast(e.message);}};
+  main.querySelectorAll("[data-prtext]").forEach(t=>t.oninput=()=>{PRD[t.dataset.prtext]=t.value;});
+  main.querySelectorAll("[data-prsend]").forEach(b=>b.onclick=async()=>{const id=b.dataset.prsend,text=(PRD[id]||"").trim();if(!text)return toast("Write a reply first.");
+    try{let r=await api("prayers/"+id+"/reply","POST",{text});
+      if(r.flags&&r.flags.length){if(!confirm("This reply may break your own rules:\n\n"+r.flags.join("\n")+"\n\nSend it anyway?"))return;r=await api("prayers/"+id+"/reply","POST",{text,force:true});}
+      delete PRD[id];await refresh();toast("Reply sent.");go();}catch(e){toast(e.message);}});
+  main.querySelectorAll("[data-prdraft]").forEach(b=>b.onclick=async()=>{const id=b.dataset.prdraft;BUSY["pd"+id]=1;go();try{const r=await api("prayers/"+id+"/draft","POST");PRD[id]=r.reply;toast("Draft ready. Edit it, then send.");}catch(e){toast(e.message);}delete BUSY["pd"+id];go();});
+  main.querySelectorAll("[data-prpray]").forEach(b=>b.onclick=()=>act(()=>api("prayers/"+b.dataset.prpray+"/praying","POST"),"Marked as praying."));
+  main.querySelectorAll("[data-prclose]").forEach(b=>b.onclick=()=>act(()=>api("prayers/"+b.dataset.prclose+"/close","POST"),"Closed."));
+  main.querySelectorAll("[data-prerase]").forEach(b=>b.onclick=()=>{const id=b.dataset.prerase;if(SURE!==id){SURE=id;return go();}SURE=null;act(()=>api("prayers/"+id,"DELETE"),"Request erased.");});
+  if(g("#f-devgen"))g("#f-devgen").onsubmit=async e=>{e.preventDefault();const body={topic:g("#dg-topic").value,passage:g("#dg-pass").value,days:+g("#dg-days").value,start:g("#dg-start").value};BUSY.dg=1;go();try{const r=await api("devotionals/generate","POST",body);await refresh();toast(r.count+" drafts written. Read them, then approve.");}catch(er){toast(er.message);}delete BUSY.dg;go();};
+  main.querySelectorAll("[data-dev]").forEach(f=>{const id=f.dataset.dev,val=()=>{const o={};f.querySelectorAll("[data-f]").forEach(i=>o[i.dataset.f]=i.value);return o;};
+    f.onsubmit=e=>{e.preventDefault();act(()=>api("devotionals/"+id,"PUT",val()),"Saved.");};
+    f.querySelector("[data-lookup]").onclick=async()=>{const v=val();if(!v.ref)return toast("Type a reference first.");try{const r=await api("bible?ref="+encodeURIComponent(v.ref)+"&v="+encodeURIComponent(v.version||"web"));f.querySelector('[data-f="text"]').value=r.text;toast("Text found. Save to keep it.");}catch(er){toast(er.message);}};
+    f.querySelector("[data-devpub]").onclick=async e=>{try{await api("devotionals/"+id,"PUT",val());await api("devotionals/"+id+"/"+e.target.dataset.act,"POST");await refresh();toast(e.target.dataset.act==="publish"?"Published.":"Pulled back to draft.");go();}catch(er){toast(er.message);}};
+    f.querySelector("[data-deverase]").onclick=()=>{if(SURE!==id){SURE=id;return go();}SURE=null;act(()=>api("devotionals/"+id,"DELETE"),"Deleted.");};});
+  if(g("#dev-all"))g("#dev-all").onclick=()=>act(async()=>{await api("devotionals-publish-all","POST");},"All drafts published.");
+  if(g("#f-sergen"))g("#f-sergen").onsubmit=async e=>{e.preventDefault();const body={kind:g("#sg-kind").value,count:+g("#sg-count").value,cadence:g("#sg-cad").value,topic:g("#sg-topic").value,passage:g("#sg-pass").value,notes:g("#sg-notes").value,start:g("#sg-start").value};BUSY.sg=1;go();try{const r=await api("series/generate","POST",body);await refresh();toast("Draft ready. Read it, edit anything, then approve.");}catch(er){toast(er.message);}delete BUSY.sg;go();};
+  const serVal=a=>{const o={items:[]};a.querySelectorAll("[data-s]").forEach(i=>o[i.dataset.s]=i.value);a.querySelectorAll("[data-item]").forEach(d=>{const it={};d.querySelectorAll("[data-i]").forEach(i=>it[i.dataset.i]=i.value);it.questions=(it.questions||"").split("\n").map(x=>x.trim()).filter(Boolean);o.items.push(it);});return o;};
+  main.querySelectorAll("[data-ser]").forEach(a=>{const id=a.dataset.ser;
+    a.querySelector("[data-sersave]").onclick=()=>act(()=>api("series/"+id,"PUT",serVal(a)),"Saved.");
+    a.querySelector("[data-serpub]").onclick=async e=>{try{await api("series/"+id,"PUT",serVal(a));await api("series/"+id+"/"+e.target.dataset.act,"POST");await refresh();toast(e.target.dataset.act==="publish"?"Published. It is now in the Today tab.":"Pulled back to draft.");go();}catch(er){toast(er.message);}};
+    a.querySelector("[data-serhand]").onclick=()=>{const v=serVal(a);copy([v.title,v.blurb,""].concat(...v.items.map((it,i)=>[`Part ${i+1}: ${it.title}`,`Passage: ${it.passage}`,"",it.summary,"","Discussion:",...it.questions.map((q,n)=>`${n+1}. ${q}`),"",`This week: ${it.application}`,`Prayer: ${it.prayer}`,"",""])).join("\n"));};
+    a.querySelector("[data-serdel]").onclick=()=>{if(SURE!==id){SURE=id;return go();}SURE=null;act(()=>api("series/"+id,"DELETE"),"Deleted.");};});
+  if(g("#f-staff"))g("#f-staff").onsubmit=e=>{e.preventDefault();act(()=>api("staff","POST",{name:g("#sf-name").value,role:g("#sf-role").value,pass:g("#sf-pass").value}),"Added. Share the church ID, their name and the passcode with them.");};
+  main.querySelectorAll("[data-streset]").forEach(b=>b.onclick=()=>{const p=prompt("New temporary passcode (at least 8 characters):");if(p)act(()=>api("staff/"+b.dataset.streset+"/reset","POST",{pass:p}),"Passcode changed.");});
+  main.querySelectorAll("[data-stoff]").forEach(b=>b.onclick=()=>act(()=>api("staff/"+b.dataset.stoff+"/"+(b.dataset.off==="1"?"disable":"enable"),"POST"),b.dataset.off==="1"?"Paused and signed out.":"Resumed."));
+  main.querySelectorAll("[data-stdel]").forEach(b=>b.onclick=()=>{const id=b.dataset.stdel;if(SURE!==id){SURE=id;return go();}SURE=null;act(()=>api("staff/"+id,"DELETE"),"Removed.");});
+  main.querySelectorAll("[data-mreset]").forEach(b=>b.onclick=()=>{const p=prompt("New passcode for this member (at least 6 characters):");if(p)act(()=>api("members/"+b.dataset.mreset+"/reset","POST",{pass:p}),"Passcode changed. Tell them in person.");});
+  main.querySelectorAll("[data-mdel]").forEach(b=>b.onclick=()=>{const id=b.dataset.mdel;if(SURE!==id){SURE=id;return go();}SURE=null;act(()=>api("members/"+id,"DELETE"),"Account and its shared requests removed.");});
   main.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>copy(b.dataset.copy));
   main.querySelectorAll("[data-copyq]").forEach(b=>b.onclick=()=>{const q=ST.queue.find(x=>x.id===+b.dataset.copyq);if(q)copy(q.body);});
   main.querySelectorAll("[data-dismiss]").forEach(b=>b.onclick=()=>act(()=>api("friction","POST",{i:+b.dataset.dismiss}),"Dismissed."));
@@ -503,9 +509,13 @@ function bind(){
     g("#f-groups").onsubmit=e=>{e.preventDefault();save({groups:collect()},"Groups saved.");};
     g("#addgrp").onclick=()=>{ST.groups=collect().concat([{name:"",day:"",time:"",area:"",stage:"",topic:"",desc:"",open:true}]);go();};
     main.querySelectorAll("[data-delgrp]").forEach(b=>b.onclick=()=>{const a=collect();a.splice(+b.dataset.delgrp,1);ST.groups=a;go();});}
+  if(g("#stbtn"))g("#stbtn").onclick=async()=>{BUSY.stbusy=1;go();try{BUSY.selftest=await api("self-test","POST");}catch(e){toast(e.message);}delete BUSY.stbusy;go();};
   if(g("#aitest"))g("#aitest").onclick=async()=>{BUSY.aitest=true;go();try{const j=await api("ai-test","POST");BUSY.aires=j.results;AIS=j.aiStatus;}catch(e){toast(e.message);}BUSY.aitest=false;go();};
   if(g("#copy"))g("#copy").onclick=()=>copy(g("#snip").textContent,g("#snip"));
   if(g("#try"))g("#try").onclick=()=>{if(document.getElementById("pl-preview"))return toast("Widget is already on this page.");const s=document.createElement("script");s.id="pl-preview";s.src="/widget.js";s.async=true;s.setAttribute("data-church",ST.id);document.body.appendChild(s);toast("Look for the button at the bottom right.");};
+  if(g("#pgcopy"))g("#pgcopy").onclick=()=>copy(g("#pgurl").textContent,g("#pgurl"));
+  if(g("#f-site"))g("#f-site").onsubmit=e=>{e.preventDefault();save({site:{on:g("#st-on").checked,times:g("#st-times").value,address:g("#st-addr").value,phone:g("#st-phone").value,email:g("#st-email").value,about:g("#st-about").value}},"Church page saved.");};
+  if(g("#f-check"))g("#f-check").onsubmit=async e=>{e.preventDefault();const o=g("#chk-out");o.className="muted";o.textContent="Checking…";try{const r=await api("check-site","POST",{url:g("#chk-url").value});o.textContent=r.ok?r.note:r.why;o.className=r.ok&&r.found?"pill ok":r.ok?"banner":"err";}catch(er){o.textContent=er.message;o.className="err";}};
   if(g("#f-origin"))g("#f-origin").onsubmit=e=>{e.preventDefault();save({origins:g("#origins").value.split(/\s+/).filter(Boolean)},"Domains saved. Only these sites can use your widget now.");};
   if(g("#pcopy"))g("#pcopy").onclick=()=>copy(policyText(),g("#policy"));
   if(g("#pdl"))g("#pdl").onclick=()=>download("ai-use-policy.txt",policyText(),"text/plain");
@@ -513,6 +523,7 @@ function bind(){
 }
 function go(){
   if(!TOKEN||!ST)return authView();
+  if(!canSee(VIEW))VIEW=ST.role==="team"?"prayers":"overview";
   shell((VIEWS[VIEW]||VIEWS.overview)());bind();
 }
 (async function(){

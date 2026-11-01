@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Church</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<link rel="stylesheet" href="/design.css">
+<style>
+body{min-height:100vh}
+.wrap{max-width:860px;margin:0 auto;padding:44px 22px 120px 22px;display:flex;flex-direction:column;gap:44px}
+.top h1{font-size:clamp(38px,7vw,64px);line-height:1.03;letter-spacing:-.025em;margin-top:18px;max-width:14em}
+.top .pastor{margin-top:12px;color:var(--muted);font-size:18px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px;margin-top:6px}
+.facts div{border-top:1px solid var(--line2);padding-top:12px;display:flex;flex-direction:column;gap:4px;white-space:pre-line}
+.facts b{font:500 19px/1.2 var(--display)}
+.livebar{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:6px;padding:15px 18px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+section{display:flex;flex-direction:column;gap:14px}
+section>p{max-width:62ch;font-size:17px;line-height:1.6}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;padding:13px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item b{font-weight:650}
+.item .when{color:var(--muted);font-size:14.5px;text-align:right}
+.item p{grid-column:1/-1;color:var(--muted);font-size:15px}
+.day{grid-template-columns:78px minmax(0,1fr)}
+details.q{border-top:1px solid var(--line);padding:13px 0;font-size:16px;color:var(--fg)}
+details.q:first-of-type{border-top:0}
+details.q summary{font-weight:650}
+details.q p{margin-top:8px;color:var(--muted);max-width:62ch}
+footer{color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:18px;max-width:62ch}
+.err{padding:40px 0}
+</style>
+</head>
+<body>
+<div class="wrap" id="root"><p class="muted">Loading…</p></div>
+<script>
+const $=s=>document.querySelector(s);
+const id=decodeURIComponent((location.pathname.match(/^\/c\/([^/]+)/)||[])[1]||"");
+function el(t,a,k){const e=document.createElement(t);if(a)for(const n in a){if(n==="class")e.className=a[n];else if(n==="text")e.textContent=a[n];else e.setAttribute(n,a[n]);}(k||[]).forEach(c=>c&&e.appendChild(typeof c==="string"?document.createTextNode(c):c));return e;}
+function sec(title,kids){return el("section",null,[el("h2",{text:title}),...kids]);}
+(async()=>{
+  const root=$("#root");
+  let s;
+  try{const r=await fetch("/api/public/"+encodeURIComponent(id)+"/site");s=await r.json();if(!r.ok)throw new Error(s.error);}
+  catch(e){root.replaceChildren(el("div",{class:"err"},[el("h2",{text:"This page is not available"}),el("p",{class:"muted",text:"The church may not have switched on its page yet. Check the address you were given."})]));return;}
+  document.title=s.name;
+  if(/^#[0-9a-fA-F]{6}$/.test(s.color)){document.documentElement.style.setProperty("--accent",s.color);}
+  const kids=[];
+  kids.push(el("div",{class:"top"},[el("div",{class:"brand"},[el("span",{class:"mark","aria-hidden":"true"}),el("span",{text:"Welcome"})]),el("h1",{text:s.name}),(s.pastor&&s.pastor.toLowerCase()!=="pastor")?el("p",{class:"pastor",text:/^(pastor|rev|bishop|dr)\b/i.test(s.pastor)?s.pastor:"Pastor "+s.pastor}):null]));
+  const facts=[];
+  if(s.times)facts.push(el("div",null,[el("b",{text:"When we meet"}),el("span",{text:s.times})]));
+  if(s.address)facts.push(el("div",null,[el("b",{text:"Where to find us"}),el("span",{text:s.address})]));
+  const reach=[s.contact,s.phone,s.email].filter(Boolean).join("\n");
+  if(reach)facts.push(el("div",null,[el("b",{text:"Talk to a person"}),el("span",{text:reach})]));
+  if(facts.length)kids.push(el("div",{class:"facts"},facts));
+  if(s.live)kids.push(el("div",{class:"livebar"},[el("span",null,[el("b",{text:"We are live now. "}),el("span",{class:"muted",text:"Read the service in your own language."})]),el("a",{class:"btn",href:"/live?church="+encodeURIComponent(s.id),text:"Open live captions"})]));
+  if(s.about)kids.push(sec("About us",[el("p",{text:s.about})]));
+  if(s.journey)kids.push(sec(s.journey.title,[el("p",{class:"muted",text:"This week's reading, from Sunday's message."}),el("div",{class:"list"},s.journey.days.map(d=>el("div",{class:"item day"},[el("b",{text:"Day "+d.day}),el("span",null,[el("span",{class:"ref",text:d.passage||""}),el("p",{text:[d.theme,d.question].filter(Boolean).join(". ")})])])))]));
+  if(s.groups.length)kids.push(sec("Small groups",[el("div",{class:"list"},s.groups.map(g=>el("div",{class:"item"},[el("b",{text:g.name}),el("span",{class:"when",text:[g.day,g.time,g.area].filter(Boolean).join(", ")}),g.desc?el("p",{text:g.desc}):null])))]));
+  if(s.faq.length)kids.push(sec("Questions people ask",[el("div",null,s.faq.map(f=>el("details",{class:"q"},[el("summary",{text:f.q}),el("p",{text:f.a})])))]));
+  kids.push(el("footer",{text:"Open the chat button at the bottom right to ask a question, request prayer, find a group or tell us you are new. Answers are written by AI from information "+s.name+" has confirmed, and a person reviews anything sent to you."}));
+  root.replaceChildren(...kids);
+  const sc=document.createElement("script");sc.src="/widget.js";sc.async=true;sc.dataset.church=s.id;document.body.appendChild(sc);
+})();
+</script>
+</body>
+</html>

@@ -1,19 +1,20 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Live captions</title>
 <style>
-:root{--bg:#F4F6F5;--fg:#111C19;--muted:#5A6B66;--line:#D3DBD8;--surface:#FFFFFF;--accent:#0E5A58;--accent-fg:#fff;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#0C1412;--fg:#EAF2EF;--muted:#9BB0AA;--line:#273733;--surface:#14201D;color-scheme:dark}}
+:root{--bg:#E9EBE6;--fg:#17203A;--muted:#566079;--line:#CBCFC6;--surface:#F8F8F5;--accent:#2C47B8;--accent-fg:#fff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0F1424;--fg:#E8EAF4;--muted:#A0A8C4;--line:#2B3350;--surface:#171D33;color-scheme:dark}}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--fg);font:17px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;min-height:100dvh}
+body{background:var(--bg);color:var(--fg);font:17px/1.5 "Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;min-height:100dvh}
 header{padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;border-bottom:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:10px}
 .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .top b{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pill{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;padding:5px 8px;border-radius:99px;background:var(--line);color:var(--muted);white-space:nowrap}
+.pill{font:600 12.5px/1 'Hanken Grotesk',system-ui,sans-serif;padding:5px 8px;border-radius:99px;background:var(--line);color:var(--muted);white-space:nowrap}
 .pill.live{background:#D6EBDD;color:#1F6B3A} .pill.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#1F6B3A;margin-right:6px;animation:pulse 1.6s ease-in-out infinite}
 @media (prefers-color-scheme:dark){.pill.live{background:#153222;color:#7FD09A}.pill.live::before{background:#7FD09A}}
 @keyframes pulse{50%{opacity:.25}} @media (prefers-reduced-motion:reduce){.pill.live::before{animation:none}}

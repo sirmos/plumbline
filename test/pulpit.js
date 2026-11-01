@@ -94,6 +94,7 @@ async function main() {
   fake.chatMode = "500"; await view(sid, "Spanish", 0); r = await audio(sid); await sleep(150);
   r = await view(sid, "Spanish", 0); const lastL = r.j.lines[r.j.lines.length - 1];
   ok(lastL && lastL.t === null && lastL.o.length > 0, "if translation fails, viewers still get the original line (t is null)");
+  r = await api("GET", "/api/admin/pulpit"); ok(/groq: provider error/.test(r.j.active.stats.why), "the pastor's page says why translation failed, not only that it did");
   fake.chatMode = "ok";
   fake.sttMode = "500"; ai.configure({ AI_PROVIDERS: "groq", GROQ_API_KEY: "k", GROQ_BASE: PB });
   r = await audio(sid); ok(r.s === 200 && r.j.ok === false && /groq: provider error/.test(r.j.tried.join()), "a failing speech provider reports the failure and the request still returns normally");

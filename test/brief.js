@@ -34,6 +34,7 @@ const fakes = [];
 function fake(mode) {
   const f = { hits: 0, bodies: [], mode };
   f.server = http.createServer((req, res) => { const ch = []; req.on("data", d => ch.push(d)); req.on("end", () => {
+    if (req.method === "GET") { res.writeHead(404, { "content-type": "application/json" }); return res.end("{}"); }   // the router asks for the model list: not a call
     f.hits++; const raw = Buffer.concat(ch).toString(); f.bodies.push(raw);
     const md = typeof f.mode === "function" ? f.mode() : f.mode;
     res.writeHead(200, { "content-type": "application/json" });
