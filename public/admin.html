@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
 <link rel="stylesheet" href="/design.css">
+<script>try{var t=localStorage.getItem("pl-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script src="/glass.js"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -40,24 +42,27 @@ const ago=iso=>{const m=Math.round((Date.now()-new Date(iso))/60000);return m<1?
 /* ---------- auth screen ---------- */
 function authView(){
   $("#root").innerHTML=`<div class="auth">
-  <div class="cord" aria-hidden="true"><i></i><span class="bob"></span></div>
-  <div class="hero"><div class="brand">${MARK}<span>Plumb Line</span></div><h1>Help that stays true to what you believe.</h1><p>An AI helper for your church website. It answers from what you have confirmed, protects people's privacy, and never sends anything until a pastor approves it.</p></div>
-  <div class="flow">
-    <div><b>Ask the questions they were afraid to ask</b><span class="muted">Answers come only from what you confirm.</span></div>
-    <div><b>Weekly reading plan, prayer, a blessing when they move</b><span class="muted">Every note is approved by a person.</span></div>
-    <div><b>One review queue and an AI log</b><span class="muted">See what AI drafted and decide what goes out.</span></div>
-  </div>
-  <div class="two">
-    <form class="panel" id="signup"><h3>Set up your church</h3><p class="muted">Takes two minutes. No credit card.</p>
-      <label>Church name<input type="text" id="s-name" required maxlength="80" autocomplete="organization"></label>
-      <label>Passcode (at least 8 characters)<input type="password" id="s-pass" required minlength="8" autocomplete="new-password"></label>
-      <div class="err" id="s-err" role="alert"></div><div class="row"><button class="btn" id="s-btn">Create my church</button></div></form>
+  <section class="nave"><div class="cord" aria-hidden="true"><i></i><span class="bob"></span></div>
+   <div class="brand">${MARK}<span>Plumb Line</span></div>
+   <h1>Help that stays true to what you believe.</h1>
+   <p class="lead">An AI helper for your church website. It answers from what you have confirmed, protects people's privacy, and never sends anything until a pastor approves it.</p>
+   <div class="glasswrap">${PlumbGlass.svg("sg")}</div>
+   <div class="gems">
+    <div><i style="background:#7C93FF"></i><b>Ask what they were afraid to ask</b>Answers come only from what you confirm.</div>
+    <div><i style="background:#FFC857"></i><b>Prayer, reading, a blessing</b>Every note is approved by a person.</div>
+    <div><i style="background:#F27C94"></i><b>One queue, one AI log</b>See what AI drafted and decide.</div>
+   </div></section>
+  <section class="enter"><button type="button" class="themebtn" data-theme-toggle>Dark or light</button>
     <form class="panel" id="login"><h3>Sign in</h3><p class="muted">Pastors and staff sign in here. Use the church ID shown in the sidebar.</p>
       <label>Church ID<input type="text" id="l-id" required autocomplete="username"></label>
       <label>Your name <span class="muted" style="font-weight:400">(staff only, leave empty if you are the pastor)</span><input type="text" id="l-user" maxlength="40" autocomplete="off"></label>
       <label>Passcode<input type="password" id="l-pass" required autocomplete="current-password"></label>
-      <div class="err" id="l-err" role="alert"></div><div class="row"><button class="btn ghost" id="l-btn">Sign in</button></div></form>
-  </div></div>`;
+      <div class="err" id="l-err" role="alert"></div><div class="row"><button class="btn" id="l-btn">Sign in</button></div></form>
+    <form class="panel" id="signup"><h3>New church? Set it up</h3><p class="muted">Takes two minutes. No credit card.</p>
+      <label>Church name<input type="text" id="s-name" required maxlength="80" autocomplete="organization"></label>
+      <label>Passcode (at least 8 characters)<input type="password" id="s-pass" required minlength="8" autocomplete="new-password"></label>
+      <div class="err" id="s-err" role="alert"></div><div class="row"><button class="btn ghost" id="s-btn">Create my church</button></div></form>
+  </section></div>`;
   $("#signup").onsubmit=async e=>{e.preventDefault();$("#s-btn").disabled=true;try{const j=await api("signup","POST",{name:$("#s-name").value,pass:$("#s-pass").value});setToken(j.token);await refresh();VIEW="start";go();}catch(er){$("#s-err").textContent=er.message;$("#s-btn").disabled=false;}};
   $("#login").onsubmit=async e=>{e.preventDefault();$("#l-btn").disabled=true;try{const j=await api("login","POST",{id:$("#l-id").value,user:$("#l-user").value,pass:$("#l-pass").value});setToken(j.token);await refresh();VIEW=ST.role==="team"?"prayers":"overview";go();}catch(er){$("#l-err").textContent=er.message;$("#l-btn").disabled=false;}};
 }
@@ -77,7 +82,7 @@ function shell(inner){
    <div class="logo">${MARK}<b>Plumb Line</b></div>
    <div class="who"><b>${esc(ST.name)}</b><span>${ST.me&&ST.me!==ROLE_LABEL[ST.role]?esc(ST.me)+" · ":""}${ROLE_LABEL[ST.role]||"Pastor"}</span><span class="muted mono" style="font-size:12px">ID: ${esc(ST.id)}</span><span>${AI?'<span class="pill live">AI connected</span>':'<span class="pill wait">Offline mode</span>'}</span></div>
    <nav aria-label="Sections">${NAV.map(([g,items])=>[g,items.filter(([k])=>canSee(k))]).filter(([g,items])=>items.length).map(([g,items])=>`<div class="grp">${g}</div>`+items.map(([k,l])=>`<button type="button" data-v="${k}" ${VIEW===k?'aria-current="page"':""}>${l}${badge(k)}</button>`).join("")).join("")}</nav>
-   <div style="margin-top:auto;padding:0 8px"><button class="btn ghost sm" id="out">Sign out</button></div></aside>
+   <div style="margin-top:auto;padding:0 8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost sm" id="out">Sign out</button><button type="button" class="themebtn" data-theme-toggle>Dark or light</button></div></aside>
    <main class="content">${AI||ST.role==="team"?"":`<div class="banner">No AI provider is set up on this server, so drafts use simple rule-based output. Add a free key (for example Groq) to turn AI on. Everything else works.</div>`}${inner}</main></div>`;
   document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{VIEW=b.dataset.v;go();window.scrollTo(0,0);});
   $("#out").onclick=signOut;
@@ -126,7 +131,7 @@ const VIEWS={
   <div class="two"><section class="panel"><h3>Needs you</h3>${need.length?need.map(n=>`<div class="need ${n[3]?"hot":""}"><span><b>${n[0]}</b> ${n[1]}</span><button class="btn ${n[3]?"":"ghost"} sm" data-go="${n[2]}">Open</button></div>`).join(""):`<p class="muted">You are caught up. Nothing is waiting.</p>`}</section>
   <section class="panel"><h3>Top unanswered questions</h3>${c.friction.length?`<div class="scroll"><table><tbody>${c.friction.slice(0,5).map((f,i)=>`<tr><td>${esc(f.q)}</td><td class="mono">${f.n}×</td><td><button class="btn ghost sm" data-addfaq="${i}">Add answer</button></td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">When a visitor asks something your guide cannot answer, it shows up here so you can fix it.</p>`}</section></div>
   <section class="panel"><h3>Activity</h3><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Daily activity for the last 14 days">${grid}${bars}${lab}</svg>
-   <div class="legend"><span><i class="s-q" style="background:var(--accent)"></i>Questions</span><span><i style="background:var(--amber)"></i>First-time visitors</span><span><i style="background:var(--green)"></i>Prayer</span><span><i style="background:var(--muted)"></i>Help requests</span></div>
+   <div class="legend"><span><i style="background:var(--sapphire)"></i>Questions</span><span><i style="background:var(--gold)"></i>First-time visitors</span><span><i style="background:var(--emerald)"></i>Prayer</span><span><i style="background:var(--ruby)"></i>Help requests</span></div>
    ${quiet?`<p class="muted">No activity yet. Once the widget is on your website, daily counts appear here. Only numbers are kept, never what people wrote.</p>`:""}</section>`;},
  visitors:()=>{
   const cols=[["new","New"],["contacted","Contacted"],["returned","Returned"],["connected","Connected"]],vs=ST.visitors,nope=vs.filter(v=>v.status==="closed");
@@ -521,6 +526,7 @@ function bind(){
   if(g("#pdl"))g("#pdl").onclick=()=>download("ai-use-policy.txt",policyText(),"text/plain");
   if(g("#csv"))g("#csv").onclick=()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"';download("ai-log.csv",["When,Agent,What,Source,Decision",...ST.log.map(l=>[l.at,l.agent,l.what,l.mode,l.decision].map(q).join(","))].join("\n"),"text/csv");};
 }
+document.addEventListener("click",e=>{const b=e.target.closest("[data-theme-toggle]");if(!b)return;const r=document.documentElement,dark=r.getAttribute("data-theme")?r.getAttribute("data-theme")==="dark":matchMedia("(prefers-color-scheme: dark)").matches,n=dark?"light":"dark";r.setAttribute("data-theme",n);try{localStorage.setItem("pl-theme",n);}catch(er){}});
 function go(){
   if(!TOKEN||!ST)return authView();
   if(!canSee(VIEW))VIEW=ST.role==="team"?"prayers":"overview";

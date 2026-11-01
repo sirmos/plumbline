@@ -1,29 +1,40 @@
-/* Plumb Line design system. Limewash, ink, lapis and gold leaf.
-   The one memorable thing: navigation is a plumb line. A cord hangs down the page, sections are hung from it,
-   and a gold bob rests at the page you are on. Everything else stays quiet: hairlines, small radii, no shadows. */
+/* Plumb Line design system: stained glass. Jewel colours (sapphire, ruby, emerald, amber, amethyst) on warm white by day
+   and midnight by night, with a plumb line that hangs down the page and a gold bob that rests at the page you are on. */
 :root{
-  --limewash:#E9EBE6; --plaster:#F8F8F5;
-  --bg:var(--limewash); --surface:var(--plaster); --field:#FFFFFF;
-  --fg:#17203A; --muted:#566079;
-  --line:#CBCFC6; --line2:#A3A99D; --soft:#DFE2DB;
-  --accent:#2C47B8; --accent-fg:#FFFFFF; --accent-soft:#DCE2F6;
-  --gold:#B8860F; --amber:#80590A; --amber-bg:#F3E6C4;
-  --red:#B53A26; --red-bg:#F6DDD7; --green:#25694F; --green-bg:#D9EBE2;
+  --bg:#FBF8F3; --surface:#FFFFFF; --field:#FFFFFF;
+  --fg:#181C3A; --muted:#5A6085;
+  --line:#E4DED3; --line2:#BDB6A8; --soft:#F1ECE3;
+  --accent:#2F49D1; --accent-fg:#FFFFFF; --accent-soft:#E3E8FB; --btn:linear-gradient(135deg,#2F49D1,#5A3FCB);
+  --gold:#C98F0A; --amber:#7C5606; --amber-bg:#FBEFCF; --sapphire:#2F49D1; --ruby:#C2354F; --emerald:#12896B; --amethyst:#7A45C2;
+  --red:#B42A45; --red-bg:#FBE0E5; --green:#0E7A5E; --green-bg:#D8F1E8;
+  --glow1:rgba(90,63,203,.09); --glow2:rgba(224,162,26,.12); --lift:0 1px 2px rgba(24,28,58,.05),0 16px 34px -22px rgba(24,28,58,.35);
+  --side1:#0E1745; --side2:#1B2A78;
   --display:"Newsreader","Iowan Old Style","Palatino Linotype",Georgia,serif;
   --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   color-scheme:light}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0F1424; --surface:#171D33; --field:#0C1020;
-  --fg:#E8EAF4; --muted:#A0A8C4;
-  --line:#2B3350; --line2:#46507A; --soft:#1E2540;
-  --accent:#8EA2FF; --accent-fg:#0B1030; --accent-soft:#232C55;
-  --gold:#E2B85A; --amber:#E2B85A; --amber-bg:#33290F;
-  --red:#F19A8B; --red-bg:#3A1D18; --green:#7FD3AC; --green-bg:#143027; color-scheme:dark}}
+  --bg:#0B1130; --surface:#141C46; --field:#0A0F2C;
+  --fg:#ECEEFA; --muted:#A6AED4;
+  --line:#28326B; --line2:#46519A; --soft:#1C2658;
+  --accent:#8EA2FF; --accent-fg:#0B1030; --accent-soft:#232E66; --btn:linear-gradient(135deg,#8EA2FF,#B39BFF);
+  --gold:#FFC857; --amber:#F2C265; --amber-bg:#3A2E10; --sapphire:#8EA2FF; --ruby:#FF8DA3; --emerald:#59D8B1; --amethyst:#BC94FF;
+  --red:#FF9AAA; --red-bg:#40182A; --green:#6FE0BC; --green-bg:#0F3A33;
+  --glow1:rgba(104,122,255,.22); --glow2:rgba(190,120,255,.14); --lift:0 1px 0 rgba(255,255,255,.04) inset,0 18px 40px -24px rgba(0,0,0,.8);
+  --side1:#080D26; --side2:#0F1740; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1130; --surface:#141C46; --field:#0A0F2C;
+  --fg:#ECEEFA; --muted:#A6AED4;
+  --line:#28326B; --line2:#46519A; --soft:#1C2658;
+  --accent:#8EA2FF; --accent-fg:#0B1030; --accent-soft:#232E66; --btn:linear-gradient(135deg,#8EA2FF,#B39BFF);
+  --gold:#FFC857; --amber:#F2C265; --amber-bg:#3A2E10; --sapphire:#8EA2FF; --ruby:#FF8DA3; --emerald:#59D8B1; --amethyst:#BC94FF;
+  --red:#FF9AAA; --red-bg:#40182A; --green:#6FE0BC; --green-bg:#0F3A33;
+  --glow1:rgba(104,122,255,.22); --glow2:rgba(190,120,255,.14); --lift:0 1px 0 rgba(255,255,255,.04) inset,0 18px 40px -24px rgba(0,0,0,.8);
+  --side1:#080D26; --side2:#0F1740; color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--fg);font:15.5px/1.55 var(--body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{background:radial-gradient(900px 520px at 8% -8%,var(--glow1),transparent 70%),radial-gradient(800px 480px at 100% 0%,var(--glow2),transparent 65%),var(--bg);background-attachment:fixed;color:var(--fg);font:15.5px/1.55 var(--body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 h1,h2,h3{font-family:var(--display);font-weight:500;text-wrap:balance;margin:0;font-optical-sizing:auto;letter-spacing:-.012em}
 h2{font-size:clamp(28px,3.4vw,36px);line-height:1.12} h3{font-size:20px;line-height:1.2}
 p{margin:0} .muted{color:var(--muted)} .mono{font-family:var(--mono);font-size:.92em}
@@ -141,7 +152,7 @@ th,td{text-align:left;padding:9px 10px;border-top:1px solid var(--line);vertical
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px} @media (max-width:640px){.grid3{grid-template-columns:minmax(0,1fr)}}
 .grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px} @media (max-width:760px){.grid4{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 .chart{width:100%;height:auto;display:block} .chart text{fill:var(--muted);font:11.5px var(--body)} .chart .grid{stroke:var(--line);stroke-width:1}
-.s-q{fill:var(--accent)} .s-v{fill:var(--gold)} .s-p{fill:var(--green)} .s-h{fill:var(--muted)}
+.s-q{fill:var(--sapphire)} .s-v{fill:var(--gold)} .s-p{fill:var(--emerald)} .s-h{fill:var(--ruby)}
 .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)} .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .need{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line)} .need:first-child{border-top:0}
 .need.hot b{color:var(--red)}
@@ -159,3 +170,72 @@ th,td{text-align:left;padding:9px 10px;border-top:1px solid var(--line);vertical
 .cap{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;align-items:start} .cap:first-child{border-top:0} .cap .n{font:600 12px var(--body);color:var(--muted);padding-top:3px}
 .chip{display:inline-flex;gap:6px;align-items:center;background:var(--soft);border-radius:99px;padding:4px 11px;font-size:13.5px;font-weight:500} .chip b{font-weight:700}
 .togs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:9px 20px}
+
+/* ================= stained-glass layer ================= */
+/* sign-in: a dark nave on the left with the windows, the forms on the right */
+.auth{max-width:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:0;min-height:100vh;position:static}
+.nave{position:relative;overflow:hidden;color:#EEF0FF;padding:56px 56px 56px 96px;display:flex;flex-direction:column;gap:30px;
+  background:radial-gradient(900px 520px at 15% -10%,#2F44C2 0%,transparent 62%),radial-gradient(700px 520px at 100% 110%,#6A2FA8 0%,transparent 60%),radial-gradient(500px 300px at 85% 10%,rgba(255,200,87,.20),transparent 70%),#080D2C}
+.nave .cord{left:46px}
+.nave .cord i{background:rgba(255,255,255,.35)} .nave .cord .bob::before{background:rgba(255,255,255,.35)}
+.nave .brand{color:#fff} .nave .mark::before{background:#fff}
+.nave h1{color:#fff;font-size:clamp(38px,4.6vw,64px);line-height:1.04;max-width:12em;margin:6px 0 0}
+.nave p.lead{color:#C7CEF2;font-size:18px;max-width:46ch;line-height:1.55}
+.glasswrap{position:relative;max-width:460px;margin-top:4px}
+.glasswrap::before{content:"";position:absolute;inset:-30px -40px;background:radial-gradient(closest-side,rgba(255,214,120,.30),transparent 72%);filter:blur(6px);animation:lightup 2.4s ease-out .5s both}
+.glass{position:relative;width:100%;height:auto;display:block;filter:drop-shadow(0 18px 30px rgba(0,0,0,.45));animation:lightup 1.8s ease-out .35s both}
+@keyframes lightup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.gems{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-top:6px}
+.gems div{display:flex;flex-direction:column;gap:5px;font-size:14px;color:#BCC4EE}
+.gems b{font:500 17px/1.25 var(--display);color:#fff}
+.gems i{width:26px;height:4px;border-radius:2px;margin-bottom:6px}
+.enter{display:flex;flex-direction:column;justify-content:center;gap:18px;padding:48px 52px;position:relative}
+.enter .themebtn{position:absolute;top:18px;right:20px}
+@media (max-width:980px){.auth{grid-template-columns:minmax(0,1fr)}.nave{padding:40px 22px 36px 22px}.nave .cord{display:none}.enter{padding:28px 18px 48px}.gems{grid-template-columns:minmax(0,1fr)}}
+.enter .panel{border-radius:14px}
+.themebtn{border:1px solid var(--line2);background:var(--surface);color:var(--fg);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.themebtn:hover{background:var(--soft)}
+
+/* richer surfaces */
+.panel,.card,.kcard,.empty{box-shadow:var(--lift);border-radius:12px}
+.panel,.card{position:relative;overflow:hidden}
+.panel::before,.card::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--sapphire),var(--amethyst) 34%,var(--ruby) 62%,#E0A21A);opacity:.9}
+.empty{background:var(--surface);border-style:solid;border-color:var(--line)}
+.intro h2::after{content:"";display:block;width:74px;height:4px;margin-top:10px;border-radius:2px;background:linear-gradient(90deg,var(--sapphire) 0 40%,#E0A21A 40% 70%,var(--ruby) 70%)}
+.btn{background:var(--btn);border-color:transparent;border-radius:8px;box-shadow:0 6px 16px -8px var(--accent);transition:transform .12s,filter .12s}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn.ghost{background:transparent;border-color:var(--accent);box-shadow:none;color:var(--accent)} .btn.ghost:hover{background:var(--accent-soft);transform:none}
+.btn.warn{box-shadow:none}
+input[type=text],input[type=password],input[type=email],input[type=date],input[type=number],textarea,select{border-radius:8px}
+.count{background:var(--btn);color:var(--accent-fg)}
+.pill{border-radius:999px}
+
+/* sidebar: a deep sapphire nave with the plumb line in light */
+aside{background:radial-gradient(420px 260px at 0% 0%,rgba(130,150,255,.25),transparent 70%),radial-gradient(360px 300px at 100% 100%,rgba(190,110,255,.18),transparent 70%),linear-gradient(180deg,var(--side1),var(--side2));border-right:0;color:#E8EBFF}
+aside .logo{color:#fff} aside .mark::before{background:#fff}
+aside .who{color:#C5CCF2} aside .who b{color:#fff} aside .muted{color:#9FA9DC}
+aside nav::before{background:rgba(255,255,255,.28)}
+aside nav button::before{background:rgba(255,255,255,.28)}
+aside nav .grp{color:#9FA9DC}
+aside nav button{color:#C3CAF0}
+aside nav button:hover{background:rgba(255,255,255,.09);color:#fff}
+aside nav button[aria-current="page"]{color:#fff}
+aside nav button[aria-current="page"]::after{background:#FFC857;filter:drop-shadow(0 0 6px rgba(255,200,87,.7))}
+aside .btn.ghost{color:#fff;border-color:rgba(255,255,255,.4)} aside .btn.ghost:hover{background:rgba(255,255,255,.12)}
+aside .themebtn{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28);color:#fff}
+aside .pill{background:rgba(255,255,255,.12);color:#E8EBFF} aside .pill.ok,aside .pill.live{background:rgba(111,224,188,.18);color:#8BEBCB} aside .pill.wait{background:rgba(255,200,87,.18);color:#FFD98A}
+@media (max-width:860px){aside nav button[aria-current="page"]{border-color:#FFC857;color:#FFD98A}}
+
+/* the numbers: each a different jewel */
+.stat{border-left:0;padding:16px 16px 14px;background:var(--surface);border-radius:12px;box-shadow:var(--lift);position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--sapphire)}
+.stat:nth-child(2)::before{background:#E0A21A} .stat:nth-child(3)::before{background:var(--emerald)} .stat:nth-child(4)::before{background:var(--ruby)}
+.stat b{color:var(--fg)}
+.stat:nth-child(1) b{color:var(--sapphire)} .stat:nth-child(2) b{color:var(--gold)} .stat:nth-child(3) b{color:var(--emerald)} .stat:nth-child(4) b{color:var(--ruby)}
+.flow div{border-top:0}
+.kcol>h3{border-bottom-color:var(--line2)}
+.bar .t i{background:linear-gradient(90deg,var(--sapphire),var(--amethyst))}
+.progress i{background:linear-gradient(90deg,var(--sapphire),var(--amethyst),var(--ruby))}
+.dot.done{background:var(--emerald);border-color:var(--emerald)}
+.toast{background:#141B4D;color:#fff;border:1px solid rgba(255,255,255,.18);border-radius:10px;box-shadow:0 18px 40px -16px rgba(0,0,0,.6)}
+.banner{border-radius:10px}

@@ -7,9 +7,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
 <link rel="stylesheet" href="/design.css">
+<script src="/glass.js"></script>
 <style>
 body{min-height:100vh}
 .wrap{max-width:860px;margin:0 auto;padding:44px 22px 120px 22px;display:flex;flex-direction:column;gap:44px}
+.hero{position:relative;overflow:hidden;border-radius:22px;padding:34px 30px 0;background:radial-gradient(120% 90% at 85% 0%,#3b3fb0 0,#1b2468 45%,#0c1236 100%);color:#fff;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:10px;align-items:end;box-shadow:var(--lift)}
+.hero h1{color:#fff;margin-top:14px}.hero .top .pastor,.hero .top .brand{color:#d6dbfa}
+.hero .gl{align-self:end;opacity:.95;margin-bottom:-4px}.hero .gl svg{display:block;width:100%;height:auto;max-height:260px}
+.hero .top{padding-bottom:34px}
+@media(max-width:640px){.hero{grid-template-columns:1fr;padding:26px 20px 0}.hero .gl{max-width:260px;justify-self:center}}
 .top h1{font-size:clamp(38px,7vw,64px);line-height:1.03;letter-spacing:-.025em;margin-top:18px;max-width:14em}
 .top .pastor{margin-top:12px;color:var(--muted);font-size:18px}
 .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px;margin-top:6px}
@@ -31,6 +37,7 @@ details.q summary{font-weight:650}
 details.q p{margin-top:8px;color:var(--muted);max-width:62ch}
 footer{color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:18px;max-width:62ch}
 .err{padding:40px 0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ref{color:#9FB0FF}}
 </style>
 </head>
 <body>
@@ -48,11 +55,12 @@ function sec(title,kids){return el("section",null,[el("h2",{text:title}),...kids
   document.title=s.name;
   if(/^#[0-9a-fA-F]{6}$/.test(s.color)){document.documentElement.style.setProperty("--accent",s.color);}
   const kids=[];
-  kids.push(el("div",{class:"top"},[el("div",{class:"brand"},[el("span",{class:"mark","aria-hidden":"true"}),el("span",{text:"Welcome"})]),el("h1",{text:s.name}),(s.pastor&&s.pastor.toLowerCase()!=="pastor")?el("p",{class:"pastor",text:/^(pastor|rev|bishop|dr)\b/i.test(s.pastor)?s.pastor:"Pastor "+s.pastor}):null]));
+  const gl=el("div",{class:"gl glass","aria-hidden":"true"});if(window.PlumbGlass)gl.innerHTML=PlumbGlass.svg("cg");
+  kids.push(el("div",{class:"hero"},[el("div",{class:"top"},[el("div",{class:"brand"},[el("span",{class:"mark","aria-hidden":"true"}),el("span",{text:"Welcome"})]),el("h1",{text:s.name}),(s.pastor&&s.pastor.toLowerCase()!=="pastor")?el("p",{class:"pastor",text:/^(pastor|rev|bishop|dr)\b/i.test(s.pastor)?s.pastor:"Pastor "+s.pastor}):null]),gl]));
   const facts=[];
   if(s.times)facts.push(el("div",null,[el("b",{text:"When we meet"}),el("span",{text:s.times})]));
   if(s.address)facts.push(el("div",null,[el("b",{text:"Where to find us"}),el("span",{text:s.address})]));
-  const reach=[s.contact,s.phone,s.email].filter(Boolean).join("\n");
+  const reach=[s.contact,s.phone,s.email].filter((v,i,a)=>v&&!a.slice(0,i).some(u=>u&&u.includes(v))&&!a.slice(0,i).includes(v)).join("\n");
   if(reach)facts.push(el("div",null,[el("b",{text:"Talk to a person"}),el("span",{text:reach})]));
   if(facts.length)kids.push(el("div",{class:"facts"},facts));
   if(s.live)kids.push(el("div",{class:"livebar"},[el("span",null,[el("b",{text:"We are live now. "}),el("span",{class:"muted",text:"Read the service in your own language."})]),el("a",{class:"btn",href:"/live?church="+encodeURIComponent(s.id),text:"Open live captions"})]));
