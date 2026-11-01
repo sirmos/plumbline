@@ -5,10 +5,10 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "test": "node test/e2e.js && node test/router.js && node test/pulpit.js && node test/brief.js && node test/site.js && node test/prayer.js && node test/studies.js && node test/roles.js && node test/demo.js && node test/remote.js && node test/env.js",
+    "test": "node test/e2e.js && node test/router.js && node test/pulpit.js && node test/brief.js && node test/site.js && node test/prayer.js && node test/studies.js && node test/roles.js && node test/demo.js && node test/hub.js && node test/remote.js && node test/env.js",
     "test:ai": "node test/router.js",
     "test:pulpit": "node test/pulpit.js",
-    "test:brief": "node test/brief.js && node test/site.js && node test/prayer.js && node test/studies.js && node test/roles.js && node test/demo.js && node test/remote.js",
+    "test:brief": "node test/brief.js && node test/site.js && node test/prayer.js && node test/studies.js && node test/roles.js && node test/demo.js && node test/hub.js && node test/remote.js",
     "check": "node -e \"require('./lib/env').loadEnv();require('./lib/ai').startupCheck().then(()=>process.exit(0))\""
   },
   "engines": {

@@ -95,6 +95,25 @@ function corsFor(c, req) {
   if (origin && c.origins.includes(origin)) return { "access-control-allow-origin": origin, vary: "Origin" };
   return null;
 }
+
+const THEMES = ["glass", "parchment", "coastal", "sunrise", "classic"];
+function reach(c) { // how a real person can be reached, from what the pastor entered. Nothing here is invented.
+  const s = c.site || {};
+  return { phone: s.phone || "", email: s.email || "", hours: s.hours || "", contact: c.contact || "", note: s.handoff || "", available: (c.presence || 0) > Date.now() };
+}
+const HANDOFF_RE = /\b(real|actual|live|living)\s+(person|human|people|being)\b|\bhuman\s+(being|agent|please)\b|\b(talk|speak|chat|connect|transfer|switch|put|get|let|refer)\b[^.?!]{0,40}\b(person|human|someone|somebody|pastor|staff|agent|representative|operator|minister|secretary|office)\b|\b(transfer|escalate)\s+me\b|\b(call\s*back|phone number|your number|contact (you|the church|the office))\b|\bnot (a )?(bot|robot|ai)\b/i;
+function handoffReply(c, repeat) {
+  const r = reach(c), ways = [r.phone && "call " + r.phone, r.email && "email " + r.email].filter(Boolean);
+  if (repeat) return "I have already shared how to reach the team. The quickest way is the buttons below, or open the Help tab and leave a request. A person on the care team will contact you.";
+  const out = ["Of course. I am an AI guide, so I cannot connect you to a live chat, but a real person at " + c.name + " can help."];
+  if (ways.length) out.push("You can " + ways.join(" or ") + ".");
+  else if (r.contact) out.push(r.contact);
+  if (r.hours) out.push("Office hours: " + r.hours + ".");
+  out.push(r.available ? "Our team has marked themselves reachable right now." : "Our team is not marked as reachable right now, so a call may go to voicemail.");
+  out.push("Or open the Help tab, leave your name and how to reach you, and a person on the care team will contact you.");
+  if (r.note) out.push(r.note);
+  return out.join(" ");
+}
 async function publicApi(req, res, parts) {
   const c = store.get(parts[2]);
   if (!c) return send(res, 404, { error: "Unknown church" });
@@ -108,12 +127,12 @@ async function publicApi(req, res, parts) {
 
   if (what === "config" && req.method === "GET") {
     return send(res, 200, {
-      name: c.name, pastor: c.pastor, color: c.color, contact: c.contact || "",
+      name: c.name, pastor: c.pastor, color: c.color, contact: c.contact || "", launcher: c.launcher || "", reach: reach(c),
       journey: c.published ? { title: c.published.title, days: c.published.days, approvedAt: c.published.approvedAt, approvedBy: c.pastor } : null,
       suggestions: c.faq.slice(0, 4).map(f => f.q),
       partnerCities: c.partners.map(p => p.city),
       features: { guide: c.features.guide, week: c.features.week, visit: c.features.visit, prayer: c.features.prayer, care: c.features.care,
-        groups: c.features.groups && c.groups.some(g => g.open), moving: c.features.moving && c.partners.length > 0 },
+        groups: c.features.groups && c.groups.some(g => g.open), moving: c.features.moving && c.partners.length > 0, members: c.features.members !== false },
       today: c.features.today === false ? [] : c.devotionals.filter(d => d.status === "published" && d.date <= studies.addDays(new Date().toISOString().slice(0, 10), 1)).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 14)
         .map(d => ({ date: d.date, title: d.title, ref: d.ref, text: d.text || "", version: d.version || "", reflection: d.reflection, question: d.question, prayer: d.prayer })),
       studies: c.features.today === false ? [] : c.series.filter(x => x.status === "published").map(x => ({ id: x.id, kind: x.kind, title: x.title, blurb: x.blurb, cadence: x.cadence, start: x.start, items: x.items })),
@@ -129,12 +148,13 @@ async function publicApi(req, res, parts) {
     const s = c.site, l = c.features.live && pulpit.activeFor(c.id);
     return send(res, 200, {
       id: c.id, name: c.name, pastor: c.pastor, color: c.color, contact: c.contact || "",
-      about: s.about, address: s.address, times: s.times, phone: s.phone, email: s.email,
+      about: s.about, address: s.address, times: s.times, phone: s.phone, email: s.email, tagline: s.tagline || "", theme: THEMES.includes(s.theme) ? s.theme : "glass", hero: s.hero || "", links: s.links || [], hours: s.hours || "", launcher: c.launcher || "",
+      branches: c.partners.filter(p => p.kind === "branch").map(p => ({ name: p.name, city: p.city, address: p.address || "", times: p.times || "", phone: p.phone || "" })),
       faq: c.faq.map(f => ({ q: f.q, a: f.a })),
       groups: c.groups.filter(g => g.open).map(g => ({ name: g.name, day: g.day, time: g.time, area: g.area, desc: g.desc })),
       journey: c.published ? { title: c.published.title, days: c.published.days } : null,
       live: l ? { sid: l.id, title: l.title } : null,
-      features: { prayer: c.features.prayer, care: c.features.care, live: c.features.live }
+      features: { guide: c.features.guide, visit: c.features.visit, prayer: c.features.prayer, care: c.features.care, live: c.features.live, today: c.features.today !== false, members: c.features.members !== false }
     }, H);
   }
   if (what === "live" && req.method === "GET") {
@@ -154,7 +174,7 @@ async function publicApi(req, res, parts) {
   }
   if (what === "member" && parts[4] === "me" && req.method === "GET") {
     const m = memberAuth(req, c); if (!m) return send(res, 401, { error: "Please sign in again." }, H);
-    return send(res, 200, { name: m.name, prayers: c.prayers.filter(p => p.m === m.id).map(p => ({ id: p.id, at: p.at, theme: p.theme, status: p.status, reply: p.reply ? { text: p.reply.text, at: p.reply.at, by: p.reply.by || c.pastor } : null })) }, H);
+    return send(res, 200, { name: m.name, saves: m.saves || [], prayers: c.prayers.filter(p => p.m === m.id).map(p => ({ id: p.id, at: p.at, theme: p.theme, status: p.status, reply: p.reply ? { text: p.reply.text, at: p.reply.at, by: p.reply.by || c.pastor } : null })) }, H);
   }
   if (req.method !== "POST") return send(res, 404, { error: "Not found" }, H);
   let b;
@@ -165,13 +185,18 @@ async function publicApi(req, res, parts) {
     const msgs = (Array.isArray(b.messages) ? b.messages : []).slice(-6).map(m => ({ r: m.role === "assistant" ? "Guide" : "Visitor", t: str(m.text, 400) })).filter(m => m.t);
     const last = msgs.filter(m => m.r === "Visitor").pop();
     if (!last) return send(res, 400, { error: "Ask a question first." }, H);
+    if (HANDOFF_RE.test(last.t)) { // asking for a person is never a guess: answer from what the church entered, with no AI call
+      const again = msgs.some(m => m.r === "Guide" && /^(Of course\. I am an AI guide|I have already shared how to reach)/.test(m.t));
+      c.stats.questions++; bump(c, "q"); store.put(c);
+      return send(res, 200, { answer: handoffReply(c, again), sources: [], sourceTitles: [], needsHuman: true, handoff: reach(c) }, H);
+    }
     const info = c.faq.map(f => `[${f.id}] ${f.q}: ${f.a}`).join("\n");
     const lang = LANGS.includes(b.lang) ? b.lang : "English";
     const r = await ai.askJson({
       tier: "quick", maxTokens: 700,
       validate: d => d && typeof d.answer === "string" && d.answer.trim().length > 0,
-      cacheKey: msgs.length === 1 ? JSON.stringify([c.id, lang, last.t.toLowerCase().trim(), c.faq, c.doctrine, c.rules]) : null,
-      system: ai.rules(c) + "\nReply in " + lang + ". Keep times, addresses and names exactly as written in the approved information.\nYou are the welcome guide. Answer ONLY from the approved information. If it is not covered, set needs_human true and say a real person can help. Never guess times, places or policies. Do not pressure the visitor.\nReply with ONLY JSON: {\"answer\":string under 70 words,\"sources\":[ids],\"needs_human\":boolean}",
+      cacheKey: msgs.length === 1 ? JSON.stringify([c.id, c.name, c.pastor, lang, last.t.toLowerCase().trim(), c.faq, c.doctrine, c.rules]) : null,
+      system: ai.rules(c) + "\nReply in " + lang + ". Keep times, addresses and names exactly as written in the approved information.\nYou are the welcome guide. Answer ONLY from the approved information. If it is not covered, set needs_human true and say a real person can help. Never guess times, places or policies. Do not pressure the visitor. Do not announce that you are an AI unless asked, and never repeat a sentence you already said in the conversation.\nReply with ONLY JSON: {\"answer\":string under 70 words,\"sources\":[ids],\"needs_human\":boolean}",
       user: "Approved information:\n" + info + "\n\nConversation:\n<data>\n" + msgs.map(m => m.r + ": " + m.t).join("\n") + "\n</data>",
       fallback: () => ai.faqFallback(last.t, c.faq)
     });
@@ -185,7 +210,7 @@ async function publicApi(req, res, parts) {
       c.friction.length = Math.min(c.friction.length, 100);
     }
     store.put(c);
-    return send(res, 200, { ...out, sourceTitles: out.sources.map(i => c.faq.find(f => f.id === i).q) }, H);
+    return send(res, 200, { ...out, sourceTitles: out.sources.map(i => c.faq.find(f => f.id === i).q), handoff: out.needsHuman ? reach(c) : undefined }, H);
   }
 
   if (what === "member" && parts[4] === "signup") {
@@ -205,6 +230,17 @@ async function publicApi(req, res, parts) {
     const m = c.members.find(x => x.name.toLowerCase() === name);
     if (!m || !store.checkPass(m, str(b.pass, 200))) return send(res, 401, { error: "Name or passcode is wrong. Ask " + c.pastor + "'s team to reset it." }, H);
     return send(res, 200, { name: m.name, token: store.sign({ id: c.id, mid: m.id, role: "member", exp: Date.now() + 30 * 86400000 }) }, H);
+  }
+  if (what === "member" && parts[4] === "save") {
+    const m = memberAuth(req, c); if (!m) return send(res, 401, { error: "Please sign in again." }, H);
+    const k = str(b.key, 80);
+    if (!/^(d:\d{4}-\d{2}-\d{2}|s:[A-Za-z0-9_-]{1,30}:\d{1,3}|j:week)$/.test(k)) return send(res, 400, { error: "That cannot be saved." }, H);
+    m.saves = m.saves || [];
+    const i = m.saves.indexOf(k);
+    if (b.on === false || (b.on === undefined && i >= 0)) { if (i >= 0) m.saves.splice(i, 1); }
+    else if (i < 0) { if (m.saves.length >= 200) return send(res, 400, { error: "You have saved the most this account can hold. Remove one first." }, H); m.saves.push(k); }
+    store.put(c);
+    return send(res, 200, { saves: m.saves }, H);
   }
   if (what === "member" && parts[4] === "delete") {
     const m = memberAuth(req, c); if (!m) return send(res, 401, { error: "Please sign in again." }, H);
@@ -291,7 +327,7 @@ async function publicApi(req, res, parts) {
     c.stats.moves++;
     enqueue(c, { type: "letter", agent: "Sending Letter", title: `Commendation for ${m.name || "a member"} to ${top.name}`, body: letter, flags: lf, score: ai.clamp(96 - 14 * lf.length, 0, 100), live: r.live, via: r.via, meta: { church: top.name } });
     store.put(c);
-    return send(res, 200, { matched: true, church: top.name, city: top.city, also: scored.slice(1, 3).map(x => x.p.name) }, H);
+    return send(res, 200, { matched: true, church: top.name, city: top.city, kind: top.kind || "partner", address: top.address || "", times: top.times || "", phone: top.phone || "", also: scored.slice(1, 3).map(x => x.p.name) }, H);
   }
 
   if (what === "groups") {
@@ -399,7 +435,7 @@ function auth(req) { // returns the church; req.ctx says who is signed in and wi
   else req.ctx = { role: "pastor", name: c.pastor, uid: null };
   return c;
 }
-const TEAM_OK = new Set(["state", "prayers", "care", "visitors"]);
+const TEAM_OK = new Set(["state", "prayers", "care", "visitors", "presence"]);
 function memberAuth(req, c) {
   const h = String(req.headers.authorization || "");
   const d = h.startsWith("Bearer ") ? store.verify(h.slice(7)) : null;
@@ -415,6 +451,13 @@ function sanitizeSettings(c, b) {
   if (b.rules && typeof b.rules === "object") for (const k of ["noQuote", "noPromise", "crisis", "disclose"]) if (k in b.rules) c.rules[k] = !!b.rules[k];
   if (b.site && typeof b.site === "object") for (const [k, n] of [["about", 1200], ["address", 200], ["times", 600], ["phone", 40], ["email", 120]]) if (typeof b.site[k] === "string") c.site[k] = str(b.site[k], n).trim();
   if (b.site && typeof b.site === "object" && "on" in b.site) c.site.on = !!b.site.on;
+  if (b.site && typeof b.site === "object") {
+    for (const [k, n] of [["tagline", 140], ["hours", 200], ["handoff", 300]]) if (typeof b.site[k] === "string") c.site[k] = str(b.site[k], n).trim();
+    if (typeof b.site.theme === "string" && THEMES.includes(b.site.theme)) c.site.theme = b.site.theme;
+    if (typeof b.site.hero === "string") { const u = b.site.hero.trim(); c.site.hero = /^https:\/\/[^\s"'()<>\\]{4,400}$/.test(u) ? u : ""; }
+    if (Array.isArray(b.site.links)) c.site.links = b.site.links.slice(0, 6).map(l => ({ label: str(l && l.label, 40).trim(), url: str(l && l.url, 300).trim() })).filter(l => l.label && /^https:\/\/[^\s"'<>\\]{4,290}$/.test(l.url));
+  }
+  if (typeof b.launcher === "string") c.launcher = str(b.launcher, 24).trim();
   if (typeof b.alertWebhook === "string") { const u = b.alertWebhook.trim(); c.alertWebhook = /^https:\/\/[^\s]{4,300}$/.test(u) ? u : ""; }
   if (b.features && typeof b.features === "object") for (const k of Object.keys(c.features)) if (k in b.features) c.features[k] = !!b.features[k];
   if (Array.isArray(b.groups)) c.groups = b.groups.slice(0, 60).map((g, i) => ({
@@ -425,7 +468,7 @@ function sanitizeSettings(c, b) {
   if (Array.isArray(b.faq)) c.friction = c.friction.filter(f => !c.faq.some(x => x.q.toLowerCase() === f.q.toLowerCase())); // answered gaps disappear
   if (Array.isArray(b.partners)) c.partners = b.partners.slice(0, 60).map((p, i) => ({
     id: "p" + (i + 1), name: str(p.name, 80).trim(), city: str(p.city, 80).trim(), style: ["Contemporary", "Blended", "Traditional"].includes(p.style) ? p.style : "Blended",
-    kids: !!p.kids, langs: (Array.isArray(p.langs) ? p.langs : String(p.langs || "English").split(",")).map(l => str(l, 20).trim()).filter(Boolean).slice(0, 6), note: str(p.note, 160)
+    kind: p.kind === "branch" ? "branch" : "partner", address: str(p.address, 200).trim(), times: str(p.times, 300).trim(), phone: str(p.phone, 40).trim(), kids: !!p.kids, langs: (Array.isArray(p.langs) ? p.langs : String(p.langs || "English").split(",")).map(l => str(l, 20).trim()).filter(Boolean).slice(0, 6), note: str(p.note, 160)
   })).filter(p => p.name && p.city);
   if (Array.isArray(b.origins)) c.origins = b.origins.map(o => str(o, 200).trim().replace(/\/+$/, "")).filter(o => /^https?:\/\/[^\s/]+$/.test(o)).slice(0, 20);
 }
@@ -505,6 +548,11 @@ async function adminApi(req, res, parts) {
     return send(res, 404, { error: "Not found" });
   }
 
+  if (what === "presence" && req.method === "POST") {
+    const h = Math.max(0, Math.min(12, Number(b.hours) || 0));
+    c.presence = h ? Date.now() + h * 3600000 : 0; store.put(c);
+    return send(res, 200, { presence: c.presence });
+  }
   if (what === "settings" && req.method === "PUT") { sanitizeSettings(c, b); store.put(c); return send(res, 200, { church: clean(c) }); }
 
   if (what === "sermon" && req.method === "POST") {

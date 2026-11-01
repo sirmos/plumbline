@@ -67,10 +67,23 @@
     ".opts{display:flex;gap:6px;flex-wrap:wrap} .opts label{flex-direction:row;align-items:center;gap:6px;font-weight:500;border:1px solid var(--ln);border-radius:14px;padding:5px 10px;cursor:pointer;background:var(--bg)} .opts label:has(input:checked){background:var(--c);color:var(--cf);border-color:var(--c)} .opts input{position:absolute;opacity:0;width:0;height:0} .opts label:has(input:focus-visible){outline:2px solid var(--c);outline-offset:2px}",
     ".card{border:1px solid var(--ln);border-radius:10px;padding:11px;display:flex;flex-direction:column;gap:3px} .card b{font-size:14.5px}",
     ".sel{font-size:12.5px;padding:5px 8px;width:auto}",
-    "@media (max-width:480px){.panel{position:fixed;left:0;right:0;bottom:0;width:100%;height:85vh;border-radius:14px 14px 0 0}}"
+    ".hd{display:flex;align-items:center;gap:2px}",
+    ".hb{background:none;border:0;color:inherit;font-size:17px;line-height:1;cursor:pointer;padding:6px 9px;border-radius:8px} .hb:hover,.x:hover{background:rgba(255,255,255,.2)}",
+    ".dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ADE9B;margin-right:6px}",
+    ".bob{display:inline-block;width:9px;height:13px;background:#F2C14E;clip-path:polygon(50% 100%,0 36%,24% 0,76% 0,100% 36%);flex:none}",
+    ".scrim{position:fixed;inset:0;background:rgba(8,12,40,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}",
+    ".big .panel{position:fixed;left:max(12px,4vw);right:max(12px,4vw);top:max(12px,3.5vh);bottom:max(12px,3.5vh);width:auto;height:auto;border-radius:24px;box-shadow:0 30px 90px rgba(5,8,40,.55)}",
+    ".big .head{padding:20px max(22px,calc((100% - 820px)/2))} .big .head b{font-size:22px} .big .head small{font-size:13.5px}",
+    ".big .tabs{flex-wrap:wrap;justify-content:center;overflow:visible;gap:2px;padding:6px max(14px,calc((100% - 900px)/2))} .big .tabs button{flex:0 0 auto;font-size:15px;padding:11px 16px;border-radius:10px;border-bottom:0} .big .tabs button[aria-selected=true]{background:var(--bg);box-shadow:0 1px 0 var(--ln),0 0 0 1px var(--ln)}",
+    ".big .body{padding:26px max(18px,calc((100% - 780px)/2));font-size:16px;gap:14px} .big .foot{padding:14px max(18px,calc((100% - 780px)/2))} .big .msg{font-size:16px} .big .launch{display:none}",
+    ".act{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px} .act a,.act button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln);background:var(--bg);color:var(--fg);padding:7px 12px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;text-decoration:none} .act a.pri,.act button.pri{background:var(--c);color:var(--cf);border-color:var(--c)}",
+    ".hero{background:linear-gradient(135deg,var(--c),color-mix(in srgb,var(--c) 50%,#7A45C2));color:var(--cf);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px} .hero b{font-size:18px}",
+    ".sv{display:flex;justify-content:space-between;align-items:center;gap:8px}",
+    "@media (max-width:480px){.panel,.big .panel{position:fixed;left:0;right:0;top:auto;bottom:0;width:100%;height:88vh;border-radius:16px 16px 0 0}.hb.ex{display:none}.big .tabs{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start}.big .tabs button{flex:1 0 auto}}"
   ].join("\n");
 
-  var cfg, S = { tab: "ask", chat: [], busy: false, open: false }, mem = lget(), root, panel, bodyEl, footEl, tabsEl, launch, titleEl;
+  var cfg, S = { tab: "ask", chat: [], busy: false, open: false, big: false }, mem = lget(), root, panel, bodyEl, footEl, tabsEl, launch, titleEl, scrim, expBtn, pending = null;
+  var PL = window.PlumbLine = { open: function (tab, big) { if (!cfg) { pending = { t: tab, big: big }; return; } if (tab) S.tab = tab; if (big !== undefined) setBig(big); if (!S.open) toggle(); else draw(); }, expand: function (on) { if (!cfg) { pending = { t: null, big: on !== false }; return; } setBig(on !== false); if (!S.open) toggle(); } };
 
   function init() {
     fetch(BASE + "/api/public/" + CHURCH + "/config").then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (c) { cfg = c; build(); }).catch(function () { console.warn("[Plumb Line] could not load this church's settings"); });
@@ -80,19 +93,32 @@
     sr.appendChild(h("style", {}, CSS));
     root = h("div", { class: "root" });
     root.style.setProperty("--c", cfg.color || "#2C47B8"); root.style.setProperty("--cf", onColor(cfg.color || "#2C47B8"));
-    titleEl = h("div", {}, [h("b", {}, cfg.name), h("small", {}, "Welcome. Ask anything.")]);
+    var avail = cfg.reach && cfg.reach.available;
+    titleEl = h("div", {}, [h("b", {}, cfg.name), h("small", {}, avail ? [h("span", { class: "dot" }), "A person on our team is reachable now"] : "Ask, pray, read and more")]);
     panel = h("div", { class: "panel", role: "dialog", "aria-label": cfg.name + " assistant", hidden: true });
     var close = h("button", { class: "x", "aria-label": "Close", onclick: toggle }, "×");
+    expBtn = h("button", { class: "hb ex", "aria-label": "Expand to a larger view", title: "Expand", onclick: function () { setBig(!S.big); } }, "⤢");
     tabsEl = h("div", { class: "tabs", role: "tablist" });
     bodyEl = h("div", { class: "body", "aria-live": "polite" }); footEl = h("div", { class: "foot" });
-    panel.appendChild(h("div", { class: "head" }, [titleEl, close])); panel.appendChild(tabsEl); panel.appendChild(bodyEl); panel.appendChild(footEl);
-    launch = h("button", { class: "launch", "aria-expanded": "false", onclick: toggle }, ["💬 ", cfg.live ? "Live captions" : "Questions?"]);
-    root.appendChild(panel); root.appendChild(launch); sr.appendChild(root);
+    panel.appendChild(h("div", { class: "head" }, [titleEl, h("div", { class: "hd" }, [expBtn, close])])); panel.appendChild(tabsEl); panel.appendChild(bodyEl); panel.appendChild(footEl);
+    launch = h("button", { class: "launch", "aria-expanded": "false", onclick: toggle }, [h("span", { class: "bob", "aria-hidden": "true" }), cfg.live ? "Live now" : (cfg.launcher || "Ask, pray & more")]);
+    scrim = h("div", { class: "scrim", hidden: true, onclick: function () { if (S.open) toggle(); } });
+    root.appendChild(scrim); root.appendChild(panel); root.appendChild(launch); sr.appendChild(root);
     document.body.appendChild(host);
     root.addEventListener("keydown", function (e) { if (e.key === "Escape" && S.open) { toggle(); launch.focus(); } });
+    if (mem.member) refreshMember();
+    if (pending) { var p = pending; pending = null; PL.open(p.t, p.big); }
     draw();
   }
-  function toggle() { S.open = !S.open; panel.hidden = !S.open; launch.setAttribute("aria-expanded", String(S.open)); if (S.open) draw(); }
+  function setBig(on) {
+    S.big = !!on; root.classList.toggle("big", S.big); scrim.hidden = !(S.big && S.open);
+    expBtn.textContent = S.big ? "⤡" : "⤢"; expBtn.setAttribute("aria-label", S.big ? "Return to the small view" : "Expand to a larger view"); expBtn.title = S.big ? "Make smaller" : "Expand";
+  }
+  function toggle() { S.open = !S.open; panel.hidden = !S.open; scrim.hidden = !(S.big && S.open); launch.setAttribute("aria-expanded", String(S.open)); if (S.open) draw(); }
+  function refreshMember() {
+    if (!mem.member) return;
+    api("member/me", null, mem.member.token).then(function (r) { mem.member.saves = r.saves || []; lset(mem); if (S.open) draw(); }).catch(function (e) { if (/sign in/i.test(e.message)) { mem.member = null; lset(mem); if (S.open) draw(); } });
+  }
   function tabs() {
     var f = cfg.features || {}, t = [];
     if (f.guide !== false) t.push(["ask", "Ask"]);
@@ -103,16 +129,18 @@
     if (f.prayer !== false) t.push(["prayer", "Prayer"]);
     if (f.care !== false) t.push(["care", "Help"]);
     if (f.moving) t.push(["moving", "Moving?"]);
+    if (f.members !== false) t.push(["me", mem.member ? "My space" : "Sign in"]);
     return t.length ? t : [["ask", "Ask"]];
   }
   function draw() {
     tabsEl.textContent = "";
     tabs().forEach(function (t) { tabsEl.appendChild(h("button", { role: "tab", "aria-selected": String(S.tab === t[0]), onclick: function () { S.tab = t[0]; draw(); } }, t[1])); });
+    var keepTop = (S.drawn === S.tab) ? bodyEl.scrollTop : 0; S.drawn = S.tab;
     bodyEl.textContent = ""; footEl.textContent = ""; footEl.hidden = true;
     var avail = tabs().map(function (t) { return t[0]; }); if (avail.indexOf(S.tab) < 0) S.tab = avail[0];
     if (cfg.live) bodyEl.appendChild(h("a", { class: "box", href: BASE + "/live?church=" + encodeURIComponent(CHURCH), target: "_blank", rel: "noopener", style: "text-decoration:none;color:inherit;border-left:3px solid var(--c)" }, [h("b", {}, "Live now: " + cfg.live.title), h("span", { class: "mu" }, "Read the service as captions in your language. Opens in a new tab.")]));
-    ({ ask: viewAsk, visit: viewVisit, groups: viewGroups, today: viewToday, week: viewWeek, prayer: viewPrayer, care: viewCare, moving: viewMoving }[S.tab] || viewAsk)();
-    bodyEl.scrollTop = bodyEl.scrollHeight;
+    ({ ask: viewAsk, visit: viewVisit, groups: viewGroups, today: viewToday, week: viewWeek, prayer: viewPrayer, care: viewCare, moving: viewMoving, me: viewMe }[S.tab] || viewAsk)();
+    if (S.tab === "ask") bodyEl.scrollTop = bodyEl.scrollHeight; else bodyEl.scrollTop = keepTop;
     var sel = tabsEl.querySelector("[aria-selected=true]");
     if (sel) { var l = sel.offsetLeft, r = l + sel.offsetWidth; if (r > tabsEl.scrollLeft + tabsEl.clientWidth) tabsEl.scrollLeft = r - tabsEl.clientWidth + 40; else if (l < tabsEl.scrollLeft) tabsEl.scrollLeft = Math.max(0, l - 20); }
     function hint() { tabsEl.classList.toggle("more", tabsEl.scrollWidth > tabsEl.clientWidth + 2 && tabsEl.scrollLeft + tabsEl.clientWidth < tabsEl.scrollWidth - 4); }
@@ -133,8 +161,8 @@
       if (m.role !== "user") {
         var note = [];
         if (m.sources && m.sources.length) note.push("From: " + m.sources.join(", "));
-        if (m.human) note.push(cfg.contact ? "To reach a person: " + cfg.contact : "A person on the team can help.");
         if (note.length) d.appendChild(h("small", {}, note.join(" · ")));
+        if (m.human) d.appendChild(handoffActions(m.handoff));
       }
       bodyEl.appendChild(d);
     });
@@ -149,11 +177,18 @@
     footEl.appendChild(f);
     if (cfg.disclosure) footEl.appendChild(h("div", { class: "mu" }, cfg.disclosure));
   }
+  function handoffActions(r) {
+    r = r || cfg.reach || {}; var a = h("div", { class: "act" }), digits = String(r.phone || "").replace(/[^0-9+]/g, "");
+    if (digits.replace(/\D/g, "").length >= 5) a.appendChild(h("a", { class: "pri", href: "tel:" + digits }, "Call " + r.phone));
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email || "")) a.appendChild(h("a", { href: "mailto:" + r.email }, "Email " + r.email));
+    if ((cfg.features || {}).care !== false) a.appendChild(h("button", { type: "button", onclick: function () { S.tab = "care"; draw(); } }, "Ask for a call back"));
+    return a;
+  }
   function ask(q) {
     q = (q || "").trim(); if (!q || S.busy) return;
     S.chat.push({ role: "user", text: q }); S.busy = true; draw();
     api("ask", { lang: mem.lang || "English", messages: S.chat.map(function (m) { return { role: m.role, text: m.text }; }) }).then(function (r) {
-      S.chat.push({ role: "assistant", text: r.answer, sources: r.sourceTitles, human: r.needsHuman });
+      S.chat.push({ role: "assistant", text: r.answer, sources: r.sourceTitles, human: r.needsHuman, handoff: r.handoff || cfg.reach });
     }).catch(function (e) { S.chat.push({ role: "assistant", text: e.message || "Something went wrong. Please try again." }); })
       .then(function () { S.busy = false; draw(); var i = footEl.querySelector("input"); if (i) i.focus(); });
   }
@@ -245,9 +280,10 @@
     var td = localDate(), list = (cfg.today || []).filter(function (d) { return d.date <= td; }), cur = list[0];
     function devo(d, full) {
       var vname = ""; (cfg.versions || []).forEach(function (v) { if (v.id === d.version) vname = v.name; });
-      return h("div", { class: "box" }, [h("span", { class: "ref" }, d.ref || ""), h("b", {}, d.title),
+      var bx = h("div", { class: "box" }, [h("span", { class: "ref" }, d.ref || ""), h("b", {}, d.title),
         d.text ? h("blockquote", { class: "mu", style: "margin:0;padding-left:10px;border-left:2px solid var(--ln)" }, d.text + (vname ? " (" + vname + ")" : "")) : null,
         h("span", {}, d.reflection), d.question ? h("span", {}, [h("b", {}, "Think about it: "), d.question]) : null, d.prayer ? h("span", { class: "mu" }, "Prayer: " + d.prayer) : null]);
+      bx.appendChild(actions("d:" + d.date, function () { return devoText(d, vname); }, d.title)); return bx;
     }
     if (cur) { bodyEl.appendChild(h("b", {}, cur.date === td ? "Today" : "Latest")); bodyEl.appendChild(devo(cur)); }
     list.slice(1, 7).forEach(function (d) { bodyEl.appendChild(h("details", {}, [h("summary", {}, d.date + " · " + d.title), devo(d)])); });
@@ -259,6 +295,7 @@
           var body = h("div", { class: "box" }, [h("span", { class: "ref" }, it.passage || ""), h("span", {}, it.summary),
             (it.questions && it.questions.length) ? h("div", {}, [h("b", {}, "Discuss"), h("ol", { style: "margin:4px 0 0;padding-left:18px" }, it.questions.map(function (q) { return h("li", {}, q); }))]) : null,
             it.application ? h("span", {}, [h("b", {}, "This week: "), it.application]) : null, it.prayer ? h("span", { class: "mu" }, "Prayer: " + it.prayer) : null]);
+          body.appendChild(actions("s:" + x.id + ":" + it.n, function () { return studyText(x, it); }, x.title + " part " + it.n));
           return h("details", k === 0 ? { open: true } : {}, [h("summary", {}, "Part " + it.n + " of " + n + " · " + it.title), body]);
         }).concat(idx >= n - 1 ? [h("span", { class: "mu" }, "Finished. Thank you for following along.")] : []))));
     });
@@ -276,9 +313,76 @@
     if (!j) { bodyEl.appendChild(h("div", { class: "box" }, [h("b", {}, "Nothing published yet"), h("span", { class: "mu" }, "When " + cfg.pastor + " approves this week's reading plan, it will appear here.")])); return; }
     bodyEl.appendChild(h("b", {}, j.title));
     bodyEl.appendChild(h("p", { class: "mu" }, "Approved by " + j.approvedBy + ". Drafted with AI help from the message. Open the passages in your own Bible."));
+    bodyEl.appendChild(actions("j:week", function () { return journeyText(j); }, j.title));
     j.days.forEach(function (d) {
       bodyEl.appendChild(h("div", { class: "day" }, [h("span", { class: "ref" }, "DAY " + d.day + " · " + d.passage), h("b", {}, d.theme), h("span", {}, d.question), h("span", { class: "mu" }, "Try: " + d.action)]));
     });
+  }
+
+  /* --- Save, download and My space --- */
+  function slug(t) { return String(t || "reading").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "reading"; }
+  function download(title, text) {
+    try {
+      var u = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" })), a = document.createElement("a");
+      a.href = u; a.download = slug(title) + ".txt"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 2000);
+    } catch (e) {}
+  }
+  function devoText(d, vname) { return [cfg.name, d.date + " · " + d.title, d.ref || "", d.text ? d.text + (vname ? " (" + vname + ")" : "") : "", "", d.reflection || "", d.question ? "Think about it: " + d.question : "", d.prayer ? "Prayer: " + d.prayer : ""].filter(function (x, i) { return x || i > 2; }).join("\n"); }
+  function studyText(x, it) { return [cfg.name + " · " + x.title, "Part " + it.n + " of " + x.items.length + ": " + it.title, it.passage || "", "", it.summary || "", (it.questions && it.questions.length) ? "\nDiscuss:\n" + it.questions.map(function (q, i) { return (i + 1) + ". " + q; }).join("\n") : "", it.application ? "\nThis week: " + it.application : "", it.prayer ? "Prayer: " + it.prayer : ""].join("\n"); }
+  function journeyText(j) { return [cfg.name + " · " + j.title, "Approved by " + j.approvedBy, ""].concat(j.days.map(function (d) { return "Day " + d.day + " · " + d.passage + "\n" + d.theme + "\n" + d.question + (d.action ? "\nTry: " + d.action : ""); })).join("\n\n"); }
+  function isSaved(k) { return !!(mem.member && (mem.member.saves || []).indexOf(k) >= 0); }
+  function actions(key, text, title) {
+    var a = h("div", { class: "act" });
+    var sv = h("button", { type: "button", onclick: function () {
+      if (!mem.member) { S.tab = "me"; S.hint = "Sign in or create an account to save readings."; draw(); return; }
+      api("member/save", { key: key }, mem.member.token).then(function (r) { mem.member.saves = r.saves; lset(mem); draw(); }).catch(function (e) { if (/sign in/i.test(e.message)) { mem.member = null; lset(mem); S.tab = "me"; } draw(); });
+    } }, isSaved(key) ? "★ Saved" : "☆ Save");
+    a.appendChild(sv);
+    a.appendChild(h("button", { type: "button", onclick: function () { download(title, text()); } }, "Download"));
+    return a;
+  }
+  function resolveSaved(k) {
+    var p = k.split(":");
+    if (p[0] === "d") { var d = (cfg.today || []).filter(function (x) { return x.date === p[1]; })[0]; if (!d) return null; var vn = ""; (cfg.versions || []).forEach(function (v) { if (v.id === d.version) vn = v.name; }); return { label: d.date + " · " + d.title, sub: d.ref || "Daily devotional", title: d.title, text: function () { return devoText(d, vn); } }; }
+    if (p[0] === "s") { var x = (cfg.studies || []).filter(function (y) { return y.id === p[1]; })[0], it = x && x.items.filter(function (i) { return String(i.n) === p[2]; })[0]; if (!it) return null; return { label: x.title + " · Part " + it.n, sub: it.title, title: x.title + " part " + it.n, text: function () { return studyText(x, it); } }; }
+    if (p[0] === "j" && cfg.journey) return { label: cfg.journey.title, sub: "This week's reading plan", title: cfg.journey.title, text: function () { return journeyText(cfg.journey); } };
+    return null;
+  }
+  function viewMe() {
+    var m = mem.member, msg = h("div", { class: "mu", role: "status" });
+    if (!m) {
+      bodyEl.appendChild(h("div", { class: "hero" }, [h("b", {}, "Your place at " + cfg.name), h("span", {}, "A free account for people who call this church home.")]));
+      bodyEl.appendChild(h("div", { class: "box" }, [h("b", {}, "With an account you can"), h("span", {}, "Save devotionals, studies and the weekly reading, and download them."), h("span", {}, "See " + cfg.pastor + "'s replies to your prayer requests on any phone."), h("span", {}, "Join the live service from one place."), h("span", { class: "mu" }, "It keeps only your name and a passcode. No email, no phone. You never need one to ask a question or request prayer.")]));
+      if (S.hint) bodyEl.appendChild(h("div", { class: "warn" }, S.hint));
+      var nm = h("input", { type: "text", maxlength: "40", placeholder: "First name and last initial", "aria-label": "Your name", autocomplete: "username" });
+      var pw = h("input", { type: "password", maxlength: "200", placeholder: "Passcode (6 or more characters)", "aria-label": "Passcode", autocomplete: "current-password" });
+      var go = function (kind) { msg.textContent = "…"; api("member/" + kind, { name: nm.value, pass: pw.value }).then(function (r) { mem.member = { name: r.name, token: r.token, saves: [] }; lset(mem); S.hint = ""; refreshMember(); draw(); }).catch(function (e) { msg.textContent = e.message; }); };
+      bodyEl.appendChild(h("form", { class: "box", onsubmit: function (e) { e.preventDefault(); go("login"); } }, [nm, pw, h("div", { class: "row" }, [h("button", { class: "btn" }, "Sign in"), h("button", { type: "button", class: "btn ghost", onclick: function () { go("signup"); } }, "Create account")]), msg]));
+      return;
+    }
+    bodyEl.appendChild(h("div", { class: "hero" }, [h("b", {}, "Welcome, " + m.name), h("span", {}, "Your place at " + cfg.name)]));
+    if (cfg.live) bodyEl.appendChild(h("a", { class: "box", href: BASE + "/live?church=" + encodeURIComponent(CHURCH), target: "_blank", rel: "noopener", style: "text-decoration:none;color:inherit;border-left:3px solid var(--c)" }, [h("b", {}, "Live now: " + cfg.live.title), h("span", { class: "mu" }, "Join the service with captions in your language.")]));
+    var saved = (m.saves || []).map(function (k) { return { k: k, r: resolveSaved(k) }; }).filter(function (x) { return x.r; });
+    bodyEl.appendChild(h("b", {}, "Saved"));
+    if (!saved.length) bodyEl.appendChild(h("span", { class: "mu" }, "Nothing saved yet. Use Save on a devotional, a study or this week's reading."));
+    saved.forEach(function (x) {
+      bodyEl.appendChild(h("div", { class: "box" }, [h("b", {}, x.r.label), h("span", { class: "mu" }, x.r.sub), h("div", { class: "act" }, [
+        h("button", { type: "button", onclick: function () { download(x.r.title, x.r.text()); } }, "Download"),
+        h("button", { type: "button", onclick: function () { api("member/save", { key: x.k, on: false }, m.token).then(function (r) { m.saves = r.saves; lset(mem); draw(); }); } }, "Remove")])]));
+    });
+    bodyEl.appendChild(h("b", {}, "My prayer requests"));
+    var list = h("div", { class: "box" }); bodyEl.appendChild(list);
+    api("member/me", null, m.token).then(function (r) {
+      if (!r.prayers.length) { list.appendChild(h("span", { class: "mu" }, "None shared yet. In the Prayer tab, tick the box to share a request with the team and it will appear here.")); return; }
+      r.prayers.slice(0, 10).forEach(function (p) {
+        var label = p.reply ? "Reply from " + p.reply.by : p.status === "praying" ? "The team is praying for you" : p.status === "closed" ? "Closed" : "Received, waiting for the team";
+        list.appendChild(h("div", {}, [h("span", { class: "pill" }, p.theme + " · " + label), p.reply ? h("p", { style: "margin:4px 0 0" }, p.reply.text) : null]));
+      });
+    }).catch(function (e) { if (/sign in/i.test(e.message)) { mem.member = null; lset(mem); draw(); } });
+    bodyEl.appendChild(h("div", { class: "row" }, [
+      h("button", { type: "button", class: "btn ghost", onclick: function () { mem.member = null; lset(mem); draw(); } }, "Sign out"),
+      h("button", { type: "button", class: "btn ghost", onclick: function () { if (!confirm("Delete your account, your saved items and every request you shared? This cannot be undone.")) return; api("member/delete", {}, m.token).then(function () { mem.member = null; lset(mem); draw(); }).catch(function (e) { msg.textContent = e.message; }); } }, "Delete my account")]));
+    bodyEl.appendChild(msg);
   }
 
   /* --- Prayer --- */
@@ -371,7 +475,7 @@
     if (S.moveResult) {
       var r = S.moveResult;
       bodyEl.appendChild(h("div", { class: "box" }, r.matched
-        ? [h("b", {}, "Sent to " + cfg.pastor + " for approval"), h("span", {}, "We matched you with " + r.church + " in " + r.city + "." + (r.also && r.also.length ? " Also considered: " + r.also.join(", ") + "." : "")), h("span", { class: "mu" }, "Your pastor reviews the letter before anything is shared.")]
+        ? [h("b", {}, "Sent to " + cfg.pastor + " for approval"), h("span", {}, "We matched you with " + r.church + " in " + r.city + "." + (r.kind === "branch" ? " This is one of our own branches." : "") + (r.also && r.also.length ? " Also considered: " + r.also.join(", ") + "." : "")), (r.address || r.times) ? h("span", {}, [r.address, r.times].filter(Boolean).join(" · ")) : null, h("span", { class: "mu" }, "Your pastor reviews the letter before anything is shared.")]
         : [h("b", {}, "No partner church there yet"), h("span", { class: "mu" }, "Your pastor may still know someone. Ask them directly.")]));
       return;
     }

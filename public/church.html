@@ -10,18 +10,48 @@
 <script src="/glass.js"></script>
 <style>
 body{min-height:100vh}
-.wrap{max-width:860px;margin:0 auto;padding:44px 22px 120px 22px;display:flex;flex-direction:column;gap:44px}
-.hero{position:relative;overflow:hidden;border-radius:22px;padding:34px 30px 0;background:radial-gradient(120% 90% at 85% 0%,#3b3fb0 0,#1b2468 45%,#0c1236 100%);color:#fff;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:10px;align-items:end;box-shadow:var(--lift)}
-.hero h1{color:#fff;margin-top:14px}.hero .top .pastor,.hero .top .brand{color:#d6dbfa}
-.hero .gl{align-self:end;opacity:.95;margin-bottom:-4px}.hero .gl svg{display:block;width:100%;height:auto;max-height:260px}
-.hero .top{padding-bottom:34px}
-@media(max-width:640px){.hero{grid-template-columns:1fr;padding:26px 20px 0}.hero .gl{max-width:260px;justify-self:center}}
-.top h1{font-size:clamp(38px,7vw,64px);line-height:1.03;letter-spacing:-.025em;margin-top:18px;max-width:14em}
-.top .pastor{margin-top:12px;color:var(--muted);font-size:18px}
-.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px;margin-top:6px}
+/* ---- templates: the pastor picks one in Church page ---- */
+:root[data-tpl="parchment"]{--bg:#F5EDDC;--surface:#FBF6EA;--fg:#2B2118;--muted:#6B5A45;--line:#E2D4B8;--line2:#BBA77F;--soft:#EFE3C8;--accent:#8A5A12;--accent-fg:#fff;--accent-soft:#F0E1BF;--btn:linear-gradient(135deg,#9A6516,#B8841F);--glow1:rgba(184,132,31,.14);--glow2:rgba(138,90,18,.08);--gold:#B8841F}
+:root[data-tpl="coastal"]{--bg:#EDF6F6;--surface:#FFFFFF;--fg:#0E2A33;--muted:#486A72;--line:#CFE2E3;--line2:#9DBEC2;--soft:#DDEDEE;--accent:#0F7C8C;--accent-fg:#fff;--accent-soft:#D6ECEE;--btn:linear-gradient(135deg,#0F7C8C,#16A394);--glow1:rgba(15,124,140,.12);--glow2:rgba(22,163,148,.1);--gold:#C98F0A}
+:root[data-tpl="sunrise"]{--bg:#FFF5EA;--surface:#FFFFFF;--fg:#3A1E1B;--muted:#7A5A52;--line:#F0DCC8;--line2:#D8B79A;--soft:#FBE8D3;--accent:#C2410C;--accent-fg:#fff;--accent-soft:#FDE3CF;--btn:linear-gradient(135deg,#E0561A,#D9334F);--glow1:rgba(246,165,59,.2);--glow2:rgba(217,51,79,.08);--gold:#D98A0B}
+:root[data-tpl="classic"]{--bg:#FFFFFF;--surface:#FFFFFF;--fg:#1B2230;--muted:#5C6678;--line:#E3E7EE;--line2:#B8C0CE;--soft:#F3F5F9;--glow1:transparent;--glow2:transparent}
+.wrap{max-width:900px;margin:0 auto;padding:18px 22px 120px 22px;display:flex;flex-direction:column;gap:40px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:4px 0}
+.bar .nm{display:flex;align-items:center;gap:10px;font:500 19px/1 var(--display)}
+.bob{width:10px;height:15px;background:var(--gold);clip-path:polygon(50% 100%,0 36%,24% 0,76% 0,100% 36%);flex:none}
+.bar .navs{display:flex;gap:8px;flex-wrap:wrap}
+.bar .navs a,.bar .navs button{font:600 14px var(--body);color:var(--fg);background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:8px 14px;cursor:pointer;text-decoration:none}
+.bar .navs .main{background:var(--btn);color:var(--accent-fg);border-color:transparent}
+.hero{position:relative;overflow:hidden;border-radius:24px;padding:38px 32px 0;color:#fff;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:10px;align-items:end;box-shadow:var(--lift);background:radial-gradient(120% 90% at 85% 0%,#3b3fb0 0,#1b2468 45%,#0c1236 100%)}
+.hero .top{padding-bottom:36px;position:relative;z-index:1}
+.hero .tag{font:500 18px/1.35 var(--display);color:rgba(255,255,255,.86);margin-bottom:10px;max-width:30em}
+.hero h1{font-size:clamp(38px,7vw,64px);line-height:1.03;letter-spacing:-.025em;color:#fff;max-width:14em}
+.hero .pastor{margin-top:12px;color:rgba(255,255,255,.86);font-size:18px}
+.hero .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.hero .cta .btn{background:#fff;color:#16205A;border:0;font-weight:700}
+.hero .cta .ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.55)}
+.hero .art{align-self:end;margin-bottom:-4px}.hero .art svg{display:block;width:100%;height:auto;max-height:270px}
+.hero.img{background-size:cover;background-position:center}
+:root[data-tpl="parchment"] .hero{background:#FBF6EA;color:#2B2118;border:1px solid #C9AE72;box-shadow:inset 0 0 0 7px #FBF6EA,inset 0 0 0 8px #C9AE72,var(--lift);text-align:center;grid-template-columns:1fr;padding:46px 36px}
+:root[data-tpl="parchment"] .hero h1,:root[data-tpl="parchment"] .hero .tag,:root[data-tpl="parchment"] .hero .pastor{color:#2B2118;margin-left:auto;margin-right:auto}
+:root[data-tpl="parchment"] .hero .cta{justify-content:center}:root[data-tpl="parchment"] .hero .cta .btn{background:var(--btn);color:#fff}:root[data-tpl="parchment"] .hero .cta .ghost{background:transparent;color:#2B2118;border-color:#BBA77F}
+:root[data-tpl="parchment"] .hero .art{display:none}
+:root[data-tpl="coastal"] .hero{background:linear-gradient(160deg,#0B3C49,#0F7C8C 70%,#16A394)}
+:root[data-tpl="sunrise"] .hero{background:linear-gradient(165deg,#F6A53B,#E0561A 55%,#B02A5B)}
+:root[data-tpl="sunrise"] .hero .cta .btn{color:#7C2A0A}
+:root[data-tpl="classic"] .hero{background:var(--accent);box-shadow:none;border-radius:16px}
+.hero.img::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,10,40,.35),rgba(6,10,40,.7))}
+:root[data-tpl="parchment"] .hero.img{color:#fff}
+.hub{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.hub button{all:unset;box-sizing:border-box;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--c1,var(--sapphire));border-radius:14px;padding:15px 16px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--lift)}
+.hub button:hover{border-color:var(--line2);border-left-color:var(--c1,var(--sapphire))}.hub button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hub b{font:500 19px/1.2 var(--display)}.hub span{color:var(--muted);font-size:14.5px}
+.hub button:nth-child(5n+1){--c1:var(--sapphire)}.hub button:nth-child(5n+2){--c1:var(--gold)}.hub button:nth-child(5n+3){--c1:var(--emerald)}.hub button:nth-child(5n+4){--c1:var(--ruby)}.hub button:nth-child(5n+5){--c1:var(--amethyst)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px;margin-top:2px}
 .facts div{border-top:1px solid var(--line2);padding-top:12px;display:flex;flex-direction:column;gap:4px;white-space:pre-line}
 .facts b{font:500 19px/1.2 var(--display)}
-.livebar{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:6px;padding:15px 18px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.links{display:flex;gap:10px;flex-wrap:wrap}
+.livebar{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:10px;padding:15px 18px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 section{display:flex;flex-direction:column;gap:14px}
 section>p{max-width:62ch;font-size:17px;line-height:1.6}
 .list{display:flex;flex-direction:column}
@@ -35,9 +65,10 @@ details.q{border-top:1px solid var(--line);padding:13px 0;font-size:16px;color:v
 details.q:first-of-type{border-top:0}
 details.q summary{font-weight:650}
 details.q p{margin-top:8px;color:var(--muted);max-width:62ch}
-footer{color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:18px;max-width:62ch}
+footer{color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);padding-top:18px;max-width:70ch;display:flex;flex-direction:column;gap:8px}
 .err{padding:40px 0}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ref{color:#9FB0FF}}
+@media(max-width:640px){.hero{grid-template-columns:1fr;padding:28px 20px 0}.hero .art{max-width:260px;justify-self:center}:root[data-tpl="parchment"] .hero{padding:34px 20px}}
 </style>
 </head>
 <body>
@@ -47,28 +78,62 @@ const $=s=>document.querySelector(s);
 const id=decodeURIComponent((location.pathname.match(/^\/c\/([^/]+)/)||[])[1]||"");
 function el(t,a,k){const e=document.createElement(t);if(a)for(const n in a){if(n==="class")e.className=a[n];else if(n==="text")e.textContent=a[n];else e.setAttribute(n,a[n]);}(k||[]).forEach(c=>c&&e.appendChild(typeof c==="string"?document.createTextNode(c):c));return e;}
 function sec(title,kids){return el("section",null,[el("h2",{text:title}),...kids]);}
+const hub=(tab,big)=>()=>window.PlumbLine&&window.PlumbLine.open(tab,big!==false);
+const ART={
+ coastal:'<svg viewBox="0 0 300 200" aria-hidden="true"><circle cx="220" cy="60" r="34" fill="#FFE29A" opacity=".95"/><path d="M0 130 C40 110 80 150 120 130 S200 110 240 130 S280 140 300 128 V200 H0Z" fill="#fff" opacity=".18"/><path d="M0 155 C40 135 80 175 120 155 S200 135 240 155 S280 165 300 153 V200 H0Z" fill="#fff" opacity=".28"/><path d="M0 180 C50 165 90 195 140 178 S230 165 300 182 V200 H0Z" fill="#fff" opacity=".4"/></svg>',
+ sunrise:'<svg viewBox="0 0 300 200" aria-hidden="true"><g stroke="#FFE29A" stroke-width="5" stroke-linecap="round" opacity=".8"><path d="M150 18v26M72 42l16 20M228 42l-16 20M38 96l24 8M262 96l-24 8"/></g><circle cx="150" cy="140" r="62" fill="#FFE29A"/></svg>'
+};
 (async()=>{
   const root=$("#root");
   let s;
   try{const r=await fetch("/api/public/"+encodeURIComponent(id)+"/site");s=await r.json();if(!r.ok)throw new Error(s.error);}
   catch(e){root.replaceChildren(el("div",{class:"err"},[el("h2",{text:"This page is not available"}),el("p",{class:"muted",text:"The church may not have switched on its page yet. Check the address you were given."})]));return;}
   document.title=s.name;
-  if(/^#[0-9a-fA-F]{6}$/.test(s.color)){document.documentElement.style.setProperty("--accent",s.color);}
-  const kids=[];
-  const gl=el("div",{class:"gl glass","aria-hidden":"true"});if(window.PlumbGlass)gl.innerHTML=PlumbGlass.svg("cg");
-  kids.push(el("div",{class:"hero"},[el("div",{class:"top"},[el("div",{class:"brand"},[el("span",{class:"mark","aria-hidden":"true"}),el("span",{text:"Welcome"})]),el("h1",{text:s.name}),(s.pastor&&s.pastor.toLowerCase()!=="pastor")?el("p",{class:"pastor",text:/^(pastor|rev|bishop|dr)\b/i.test(s.pastor)?s.pastor:"Pastor "+s.pastor}):null]),gl]));
+  const tpl=s.theme||"glass", D=document.documentElement;
+  if(tpl!=="glass"){D.dataset.tpl=tpl;D.dataset.theme="light";}
+  if(tpl==="classic"&&/^#[0-9a-fA-F]{6}$/.test(s.color)){D.style.setProperty("--accent",s.color);D.style.setProperty("--btn",s.color);const n=parseInt(s.color.slice(1),16);D.style.setProperty("--accent-fg",((n>>16)*.299+((n>>8)&255)*.587+(n&255)*.114)>150?"#10201E":"#fff");}
+  const f=s.features||{};
+  // top bar: where members and staff sign in
+  const nav=el("div",{class:"navs",role:"group","aria-label":"Sign in"},[]);
+  if(f.members!==false){const b=el("button",{type:"button",class:"main",text:"Member sign in"});b.onclick=hub("me");nav.appendChild(b);}
+  nav.appendChild(el("a",{href:"/admin?church="+encodeURIComponent(s.id),text:"Pastor and staff sign in"}));
+  const kids=[el("div",{class:"bar"},[el("span",{class:"nm"},[el("span",{class:"bob","aria-hidden":"true"}),el("span",{text:s.name})]),nav])];
+  // hero
+  const cta=el("div",{class:"cta"},[]);
+  const open=el("button",{type:"button",class:"btn",text:s.launcher||"Ask, pray and more"});open.onclick=hub("ask");cta.appendChild(open);
+  if(s.live)cta.appendChild(el("a",{class:"btn ghost",href:"/live?church="+encodeURIComponent(s.id),text:"Join the live service"}));
+  const art=el("div",{class:"art","aria-hidden":"true"});
+  if(tpl==="glass"&&window.PlumbGlass)art.innerHTML=PlumbGlass.svg("cg");else if(ART[tpl])art.innerHTML=ART[tpl];
+  const hero=el("div",{class:"hero"+(s.hero?" img":"")},[el("div",{class:"top"},[
+    s.tagline?el("p",{class:"tag",text:s.tagline}):el("p",{class:"tag",text:"Welcome"}),
+    el("h1",{text:s.name}),
+    (s.pastor&&s.pastor.toLowerCase()!=="pastor")?el("p",{class:"pastor",text:/^(pastor|rev|bishop|dr)\b/i.test(s.pastor)?s.pastor:"Pastor "+s.pastor}):null,cta]),s.hero?null:art]);
+  if(s.hero)hero.style.backgroundImage='url("'+s.hero+'")';
+  kids.push(hero);
+  if(s.links&&s.links.length)kids.push(el("div",{class:"links"},s.links.map(l=>el("a",{class:"btn ghost",href:l.url,target:"_blank",rel:"noopener noreferrer",text:l.label}))));
+  // what people can do here
+  const cards=[];
+  const card=(t,d,tab)=>{const b=el("button",{type:"button"},[el("b",{text:t}),el("span",{text:d})]);b.onclick=hub(tab);cards.push(b);};
+  if(f.guide!==false)card("Ask a question","Service times, parking, kids, anything. Answers come only from what we have confirmed.","ask");
+  if(f.visit!==false)card("New here?","Tell us a little and we will show you what to expect.","visit");
+  if(f.today!==false)card("Today's reading","A daily devotional, Bible studies and a passage lookup.","today");
+  if(f.prayer!==false)card("Prayer","Ask for prayer privately, or share it with the team.","prayer");
+  if(f.care!==false)card("Need help?","Meals, rides, a visit or a call. A real person follows up.","care");
+  if(f.members!==false)card("My space","Sign in to save readings, download them and see replies to your prayers.","me");
+  if(cards.length)kids.push(el("div",{class:"hub"},cards));
   const facts=[];
   if(s.times)facts.push(el("div",null,[el("b",{text:"When we meet"}),el("span",{text:s.times})]));
   if(s.address)facts.push(el("div",null,[el("b",{text:"Where to find us"}),el("span",{text:s.address})]));
   const reach=[s.contact,s.phone,s.email].filter((v,i,a)=>v&&!a.slice(0,i).some(u=>u&&u.includes(v))&&!a.slice(0,i).includes(v)).join("\n");
-  if(reach)facts.push(el("div",null,[el("b",{text:"Talk to a person"}),el("span",{text:reach})]));
+  if(reach)facts.push(el("div",null,[el("b",{text:"Talk to a person"}),el("span",{text:reach}),s.hours?el("span",{class:"muted",text:"Office hours: "+s.hours}):null]));
   if(facts.length)kids.push(el("div",{class:"facts"},facts));
   if(s.live)kids.push(el("div",{class:"livebar"},[el("span",null,[el("b",{text:"We are live now. "}),el("span",{class:"muted",text:"Read the service in your own language."})]),el("a",{class:"btn",href:"/live?church="+encodeURIComponent(s.id),text:"Open live captions"})]));
   if(s.about)kids.push(sec("About us",[el("p",{text:s.about})]));
+  if(s.branches&&s.branches.length)kids.push(sec("Our locations",[el("div",{class:"list"},s.branches.map(b=>el("div",{class:"item"},[el("b",{text:b.name}),el("span",{class:"when",text:b.city}),el("p",{text:[b.address,b.times,b.phone].filter(Boolean).join(" · ")})])))]));
   if(s.journey)kids.push(sec(s.journey.title,[el("p",{class:"muted",text:"This week's reading, from Sunday's message."}),el("div",{class:"list"},s.journey.days.map(d=>el("div",{class:"item day"},[el("b",{text:"Day "+d.day}),el("span",null,[el("span",{class:"ref",text:d.passage||""}),el("p",{text:[d.theme,d.question].filter(Boolean).join(". ")})])])))]));
   if(s.groups.length)kids.push(sec("Small groups",[el("div",{class:"list"},s.groups.map(g=>el("div",{class:"item"},[el("b",{text:g.name}),el("span",{class:"when",text:[g.day,g.time,g.area].filter(Boolean).join(", ")}),g.desc?el("p",{text:g.desc}):null])))]));
   if(s.faq.length)kids.push(sec("Questions people ask",[el("div",null,s.faq.map(f=>el("details",{class:"q"},[el("summary",{text:f.q}),el("p",{text:f.a})])))]));
-  kids.push(el("footer",{text:"Open the chat button at the bottom right to ask a question, request prayer, find a group or tell us you are new. Answers are written by AI from information "+s.name+" has confirmed, and a person reviews anything sent to you."}));
+  kids.push(el("footer",null,[el("span",{text:"Answers are written by AI from information "+s.name+" has confirmed, and a person reviews anything sent to you."}),el("a",{href:"/admin?church="+encodeURIComponent(s.id),text:"Pastor and staff sign in"})]));
   root.replaceChildren(...kids);
   const sc=document.createElement("script");sc.src="/widget.js";sc.async=true;sc.dataset.church=s.id;document.body.appendChild(sc);
 })();
